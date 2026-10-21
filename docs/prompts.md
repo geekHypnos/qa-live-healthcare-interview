@@ -108,3 +108,9 @@
 > 依据已通过审核的 DESIGN 和 IMPLEMENTATION_PLAN，先生成 docs/PRD_TEMPLATE.md，覆盖背景、范围、用户流程、具体需求、异常、验收、拆分及兼容限制。本步不生成登录功能代码。
 
 产物：PRD_TEMPLATE.md；先独立提交，随后按该模板生成登录 PRD。
+
+### 阶段任务指令 登录 PRD
+
+> 严格按 docs/PRD_TEMPLATE.md 的章节生成 PRD_LOGIN.md，遵循 DESIGN 的单实例会话方案；明确原患者 ID、预置账号、输入边界、旧入口替换、医生兼容、失效检查、验收和开发拆分。此步只产出需求，后续实现以该 PRD 为依据。
+
+产物：PRD_LOGIN.md。模板先于 PRD 提交，两者均先于功能代码。
