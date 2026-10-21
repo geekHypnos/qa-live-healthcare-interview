@@ -456,9 +456,9 @@ node scripts/session-restart-test.cjs
 | --- | --- |
 | 关联需求 | X1 |
 | 验证方式 | npm/Maven 实际命令 |
-| 前置条件 | E1/E2；固定 Vite/插件版本与锁文件 |
+| 前置条件 | 干净 Git 提交、原锁文件、Node/npm 与 Java17/Maven；运行本地单元/脚本测试，无需启动 MySQL、前端或后端业务服务；已有缓存可复用 |
 | 操作步骤 | 1. 在干净提交下执行 npm ci --prefix web/qa-web，单独保存原始输出<br>2. 顺序运行前端、脚本测试及 vue-tsc/build，然后用 Java 17 执行 Maven test（不 package、不复制 JAR）<br>3. 执行完整 npm audit --json 和指定依赖树检查，核对运行 JAR 摘要不变 |
-| 预期结果 | 可重装，无非法依赖；测试与构建成功；全量漏洞数为 0 |
+| 预期结果 | 按锁文件重装成功；指定构建链依赖树检查无 invalid/missing 报错；测试与构建成功；当次 npm audit 报告漏洞数为 0（不代表全项目安全审计） |
 | 实际结果 | 本轮独立验收通过：npm ci 新装 85 个包、审计 86 个包；随后前端 18、脚本 35、后端 14 项测试通过，类型检查/构建成功，完整 audit=0，7 条命令均 exit 0。Vite 6.4.4/插件 5.2.4/esbuild 0.25.12 不变。保留 npm allowScripts 提示及构建大包警告；不声称无警告。运行 JAR 前后摘要一致 |
 | 对应证据 | [npm ci 原始日志](evidence/install-c4c5e54/npm-ci.log)、[前端测试](evidence/install-c4c5e54/frontend-test.log)、[脚本测试](evidence/install-c4c5e54/script-test.log)、[后端测试汇总](evidence/install-c4c5e54/backend-test.log)、[构建](evidence/install-c4c5e54/build.log)、[审计](evidence/install-c4c5e54/audit-results.json)、[依赖树](evidence/install-c4c5e54/dependencies.log)、[清单](evidence/install-c4c5e54/run-manifest.json)、[JAR 与执行范围](evidence/install-c4c5e54/scope.json) |
 
@@ -562,3 +562,16 @@ node scripts/session-restart-test.cjs
 第 9 节记录的是上轮复核时的状态。OPS-01 所缺 npm ci 独立日志现由新运行补齐，不回填旧运行或改写旧证据。新运行始于干净提交 c4c5e54，使用原锁文件与原技术栈；具体命令、起止时间、退出码和摘要见独立清单。收集器按原规则只发布后端测试汇总，npm ci 输出单独原样保留。
 
 未运行 curl、浏览器、数据库、自然超时/重启业务验收，未生成新视频；它们的结果仍属于 3b5681f 原运行。安装脚本 allowScripts 提示未通过自动批准或升级依赖消除，现有安装后的测试和构建已通过；这不证明每个可选平台安装脚本均执行。后端仅运行 test，不生成或替换运行 JAR。
+
+## 11. 安装证据复审（2026-10-21）
+
+[机器核对记录](evidence/install-c4c5e54/evidence-review.json)对应复审前 HEAD `01dbb43`。确认安装运行绑定 c4c5e54，执行时间为 15:04:33–15:04:52（Asia/Shanghai）；7 条命令顺序、退出码、日志摘要及 18/35/14 项通过数一致。旧业务验收提交、安装提交与复审 HEAD 的锁摘要一致，应用和测试脚本无差异。
+
+本轮修正的表述边界：
+
+- “干净安装”指 npm ci 按锁文件重装依赖，不代表全新机器、清空 npm/Maven 缓存或 clean 构建。Maven 实际为 test，不是 clean/package。
+- npm ls 仅检查列出的 Vite、Vue 插件和 esbuild，不证明全部依赖树均无问题；audit 0 仅指该次 npm 审计范围。
+- npm ci 的 added=85、audited=86 与独立 audit JSON 的 dependencies.total=135 是不同输出统计，原样保留，不合并成同一个安装数量或测试数。
+- scope.json 是运行结束后生成的辅助范围/环境/JAR 摘要记录，不是原清单 7 条命令的输出，原清单没有覆盖其摘要。本轮另记录清单和 scope 的 SHA-256；不回写原清单或把辅助记录冒充原始命令日志。JAR 当前摘要与记录一致，不据此前后采样声称持续监控过文件。
+
+本次仅审核证据与修正文档，没有重新安装、执行应用测试、重录视频或修改 JAR。原始日志、清单及 scope 均保持不变。安装后测试/构建通过结论仍成立。
