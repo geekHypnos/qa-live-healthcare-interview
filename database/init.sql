@@ -1,4 +1,5 @@
 -- 本机演示数据。重复执行只补充不存在的记录，不覆盖管理界面中的修改。
+SET NAMES utf8mb4;
 CREATE TABLE IF NOT EXISTS doctors (
  id VARCHAR(32) PRIMARY KEY, username VARCHAR(64) NOT NULL UNIQUE,
  name VARCHAR(80) NOT NULL, title VARCHAR(80) NOT NULL, department VARCHAR(80) NOT NULL,

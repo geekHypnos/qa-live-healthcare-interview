@@ -61,6 +61,11 @@ const state = reactive<State>({
   currentPatient: null,
 });
 
+// 只在身份真正切换或认证操作开始时更新；同账号刷新不能取消正在提交的操作。
+let authVersion = 0;
+const identityKey = (identity: SessionIdentity | null) => identity
+  ? `${identity.role}:${identity.accountId}:${identity.profile.id}` : '';
+
 export const store = {
   state,
 
@@ -73,59 +78,75 @@ export const store = {
   },
 
   clearIdentity() {
+    authVersion++;
     state.identity = null;
     state.currentDoctor = null;
     state.currentPatient = null;
+    state.sessionReady = true;
   },
 
   applyIdentity(identity: SessionIdentity) {
+    if (identityKey(state.identity) !== identityKey(identity)) authVersion++;
     state.identity = identity;
     state.currentPatient = identity.role === 'PATIENT' ? identity.profile : null;
     state.currentDoctor = identity.role === 'DOCTOR' ? identity.profile : null;
     state.sessionError = '';
+    state.sessionReady = true;
   },
 
   async restoreSession() {
+    const version = authVersion;
+    state.sessionReady = false;
     try {
       const identity = await authApi.me();
+      if (version !== authVersion) return; // 退出或新登录后的旧响应不能覆盖新状态。
       // 页面恢复时发现账号已被另一标签页更换，先清理旧页面而非沿用草稿。
-      if (state.identity && (state.identity.role !== identity.role || state.identity.profile.id !== identity.profile.id)) {
+      if (state.identity && identityKey(state.identity) !== identityKey(identity)) {
         this.clearIdentity();
         state.sessionError = '账号已切换，请重新登录';
       } else { this.applyIdentity(identity); }
     } catch (error) {
+      if (version !== authVersion) return;
       if (error instanceof ApiError && error.status === 401) this.clearIdentity();
       else state.sessionError = (error as Error).message;
-    } finally { state.sessionReady = true; }
+    } finally { if (version === authVersion) state.sessionReady = true; }
   },
 
   async login(username: string, password: string, role: 'PATIENT' | 'DOCTOR') {
-    const identity = await authApi.login(username, password);
-    if (identity.role !== role) {
-      await authApi.logout();
-      this.clearIdentity();
-      throw new Error(role === 'PATIENT' ? '请使用患者账号登录' : '请使用医生账号登录');
+    const version = ++authVersion;
+    try {
+      const identity = await authApi.login(username, password);
+      if (version !== authVersion) throw new Error('登录请求已过期，请重试');
+      if (identity.role !== role) {
+        await authApi.logout();
+        throw new Error(role === 'PATIENT' ? '请使用患者账号登录' : '请使用医生账号登录');
+      }
+      this.applyIdentity(identity);
+      return identity;
+    } catch (error) {
+      if (version === authVersion) this.clearIdentity();
+      throw error;
     }
-    this.applyIdentity(identity);
-    return identity;
   },
 
   async logout() {
+    const version = ++authVersion;
     await authApi.logout();
-    this.clearIdentity();
+    if (version === authVersion) this.clearIdentity();
   },
 
   async runAsCurrent<T>(action: () => T | Promise<T>): Promise<T> {
     const expected = state.identity;
+    const version = authVersion;
     if (!expected) throw new Error('请先登录');
     try {
       return await verifyBeforeAction(expected, authApi.me, () => {
-        if (state.identity !== expected) throw new Error('身份已变化，请重试');
+        if (version !== authVersion || identityKey(state.identity) !== identityKey(expected)) throw new Error('身份已变化，请重试');
         return action();
       });
     } catch (error) {
       // 网络故障保留身份以便重试；401 或身份变化不能继续使用旧草稿。
-      if (!(error instanceof ApiError) || error.status === 401) this.clearIdentity();
+      if (version === authVersion && (!(error instanceof ApiError) || error.status === 401)) this.clearIdentity();
       throw error;
     }
   },

@@ -8,6 +8,7 @@ function savedLocale(): Locale {
   catch { return 'zh-CN'; }
 }
 export const locale = shallowRef<Locale>(savedLocale());
+if (typeof document !== 'undefined') document.documentElement.lang = locale.value;
 export function setLocale(value: string) {
   locale.value = value === 'en-US' ? 'en-US' : 'zh-CN';
   try { localStorage.setItem('qa-locale', locale.value); } catch { /* 禁用存储时仍可在本页切换。 */ }

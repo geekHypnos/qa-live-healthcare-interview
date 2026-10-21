@@ -33,7 +33,7 @@ login() {
 }
 
 call 200 doctors GET /api/doctors
-assert_json 'Array.isArray(b) && b.length === 5 && b[0].id === "doc001" && b.every(d => Array.isArray(d.specialties) && typeof d.isActive === "boolean" && !("password" in d) && !("passwordHash" in d))'
+assert_json 'Array.isArray(b) && b.length === 5 && b[0].id === "doc001" && b[0].name === "张伟医生" && b[0].department === "心内科" && b.every(d => Array.isArray(d.specialties) && typeof d.isActive === "boolean" && !("password" in d) && !("passwordHash" in d))'
 call 401 anonymous GET /api/auth/me
 call 403 login_without_csrf POST /api/auth/login -H 'Content-Type: application/json' -d '{"username":"patient001","password":"Patient123!"}'
 call 403 logout_without_csrf POST /api/auth/logout
