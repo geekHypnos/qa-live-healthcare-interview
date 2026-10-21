@@ -1,0 +1,49 @@
+one: PASS
+✔ collector records real successes, digests and refuses existing directory (120.618084ms)
+fail: FAIL
+✔ collector rejects nonzero then success (94.438375ms)
+missing: FAIL
+✔ collector rejects spawn failure (45.434084ms)
+signal: FAIL
+✔ collector rejects signal (66.57025ms)
+✔ Git guard rejects unstaged with unchanged HEAD (42.422292ms)
+✔ Git guard rejects staged with unchanged HEAD (45.174792ms)
+✔ Git guard rejects untracked with unchanged HEAD (41.459708ms)
+change: PASS
+✔ collector rejects source changed during run (71.237125ms)
+✔ valid evidence accepts actual counts without baseline hardcoding (14.091209ms)
+✔ reject missing (3.200042ms)
+✔ reject audit (4.180834ms)
+✔ reject exit (2.096667ms)
+✔ reject incomplete (1.758833ms)
+✔ reject codeSha (2.579375ms)
+✔ reject lockfileSha256 (2.336667ms)
+✔ reject runId (1.717041ms)
+✔ reject tamper (2.143917ms)
+✔ reject unit (2.845583ms)
+✔ reject zero (2.041375ms)
+✔ reject mismatch (2.155125ms)
+✔ reject marker (2.396458ms)
+✔ record cleanup read (1.727958ms)
+✔ record cleanup steps (1.22425ms)
+✔ record cleanup restore (4.837833ms)
+✔ record cleanup context (1.315959ms)
+✔ record cleanup newContext (0.685334ms)
+Saved /Users/hypnos/Documents/ChatGPT/test/qa-live-healthcare-interview/artifacts/evidence/20261021-install-c4c5e54/browser/interview-demo.webm
+✔ record cleanup none (0.333541ms)
+✔ recording refuses dirty source before browser launch with unchanged HEAD (60.254208ms)
+✔ reply assertion catches no write, wrong target and wrong retry text (2.069708ms)
+✔ reply assertion accepts only target change and count transition (0.433458ms)
+✔ timeout wrapper port (0.585291ms)
+✔ timeout wrapper start (0.103875ms)
+✔ timeout wrapper ready (0.079666ms)
+✔ timeout wrapper test (0.240583ms)
+✔ timeout wrapper none (0.998667ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 580.482709

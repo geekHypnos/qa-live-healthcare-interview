@@ -1,0 +1,13 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),{execFileSync}=require('node:child_process');
+const {collect,assertCleanSource,digest}=require('../collect-evidence.cjs');
+function fixture(t){const root=fs.mkdtempSync(path.join(os.tmpdir(),'qa-evidence-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));const git=(...a)=>execFileSync('git',a,{cwd:root,stdio:'pipe'});git('init');git('config','user.name','Test');git('config','user.email','test@example.invalid');fs.mkdirSync(path.join(root,'web/qa-web'),{recursive:true});fs.writeFileSync(path.join(root,'web/qa-web/package-lock.json'),'{}');fs.writeFileSync(path.join(root,'.gitignore'),'artifacts/\n');git('add','.');git('commit','-m','fixture');return {root,git};}
+const command=(id,source)=>({id,file:id+'.log',cmd:process.execPath,args:['-e',source]});
+test('collector records real successes, digests and refuses existing directory',async t=>{const {root}=fixture(t);const dir=path.join(root,'artifacts/run');const m=await collect({root,dir,runId:'run',commands:[command('one','console.log("PASS")')]});assert.equal(m.completed,true);assert.equal(m.commands[0].sha256,digest(fs.readFileSync(path.join(dir,'one.log'))));await assert.rejects(collect({root,dir,runId:'run',commands:[]}));});
+for(const [label,commands] of [
+ ['nonzero then success',[command('fail','console.log("PASS");process.exit(1)'),command('ok','console.log("PASS")')]],
+ ['spawn failure',[{id:'missing',file:'missing.log',cmd:'/does-not-exist',args:[]}]],
+ ['signal',[command('signal','process.kill(process.pid,"SIGTERM")')]],
+])test('collector rejects '+label,async t=>{const {root}=fixture(t);const dir=path.join(root,'artifacts/run');await assert.rejects(collect({root,dir,runId:'run',commands}));const m=JSON.parse(fs.readFileSync(path.join(dir,'run-manifest.json')));assert.equal(m.completed,false);assert.ok(m.commands.some(c=>c.exitCode!==0||c.signal||c.error));});
+for(const kind of ['unstaged','staged','untracked'])test('Git guard rejects '+kind+' with unchanged HEAD',t=>{const {root,git}=fixture(t);const head=git('rev-parse','HEAD').toString();if(kind==='untracked')fs.writeFileSync(path.join(root,'new.cjs'),'');else {fs.appendFileSync(path.join(root,'.gitignore'),'# changed');if(kind==='staged')git('add','.gitignore');}assert.throws(()=>assertCleanSource(root));assert.equal(git('rev-parse','HEAD').toString(),head);});
+test('collector rejects source changed during run',async t=>{const {root}=fixture(t);await assert.rejects(collect({root,dir:path.join(root,'artifacts/run'),runId:'run',commands:[command('change','require("fs").writeFileSync("new.cjs","changed")')]}));});
+module.exports={fixture,command};

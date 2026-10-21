@@ -1,0 +1,13 @@
+{
+  "runId": "20261021-install-c4c5e54",
+  "scope": "clean install, unit/script tests, frontend build, backend test, npm audit and dependency tree; no HTTP/browser/database/video rerun",
+  "node": "v26.8.1",
+  "npm": "11.19.0",
+  "javaHome": "/Users/hypnos/Library/Java/JavaVirtualMachines/ms-17.0.19/Contents/Home",
+  "runtimeJar": {
+    "path": "artifacts/runtime/service.jar",
+    "beforeSha256": "6bb9416b905eaa3b6faf74fd79cef68ed570f2689d9c6fba50778432c16b6958",
+    "afterSha256": "6bb9416b905eaa3b6faf74fd79cef68ed570f2689d9c6fba50778432c16b6958",
+    "unchanged": true
+  }
+}

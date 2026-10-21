@@ -1,0 +1,30 @@
+
+> vite-vue-typescript-starter@0.0.0 test
+> node --test tests/*.test.mjs
+
+✔ network and HTTP errors preserve distinct status (46.286542ms)
+✔ each mutation requests fresh CSRF and keeps same-origin cookies (2.155458ms)
+✔ homepage locales have matching keys and English translations (0.761208ms)
+✔ missing or unsupported saved locale defaults to Chinese (35.191875ms)
+✔ saved English restores and language changes update storage and html lang (6.768791ms)
+✔ blocked storage still allows switching and preserves unknown database text (7.538792ms)
+✔ same identity may perform a simulated action (0.530375ms)
+✔ expired, different or unavailable session never writes (0.263167ms)
+✔ old successful restore cannot resurrect logged-out identity (52.468625ms)
+✔ same-identity restore does not cancel concurrent action (11.68725ms)
+✔ old unauthorized restore does not clear a later login (12.134167ms)
+✔ failed logout during restore releases loading state without trusting old response (8.597666ms)
+✔ business failure preserves verified identity (5.119791ms)
+✔ action session failure 0 has correct identity handling (6.49775ms)
+✔ action session failure 500 has correct identity handling (4.789125ms)
+✔ action session failure 401 has correct identity handling (4.891583ms)
+✔ changed server identity prevents action and clears old identity (7.543917ms)
+✔ pending action cannot clear a newer login (5.40725ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 411.842375

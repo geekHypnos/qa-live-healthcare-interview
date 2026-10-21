@@ -2,28 +2,28 @@
   <div class="home">
     <section class="hero">
       <div class="hero-content">
-        <h1>专业在线医疗问诊平台</h1>
-        <p class="hero-subtitle">连接专业医生与患者,提供便捷、高效的医疗咨询服务</p>
+        <h1>{{ t('专业在线医疗问诊平台') }}</h1>
+        <p class="hero-subtitle">{{ t('连接专业医生与患者,提供便捷、高效的医疗咨询服务') }}</p>
         <div class="hero-features">
           <div class="feature-item">
             <CheckCircleOutlined class="feature-icon" />
-            <span>专业医生团队</span>
+            <span>{{ t('专业医生团队') }}</span>
           </div>
           <div class="feature-item">
             <CheckCircleOutlined class="feature-icon" />
-            <span>实时在线问诊</span>
+            <span>{{ t('实时在线问诊') }}</span>
           </div>
           <div class="feature-item">
             <CheckCircleOutlined class="feature-icon" />
-            <span>隐私安全保护</span>
+            <span>{{ t('隐私安全保护') }}</span>
           </div>
         </div>
         <div class="hero-actions">
           <a-button type="primary" size="large" @click="navigateTo('/consultation')">
-            立即问诊
+            {{ t('立即问诊') }}
           </a-button>
           <a-button size="large" @click="navigateTo('/doctors')">
-            查看医生
+            {{ t('查看医生') }}
           </a-button>
         </div>
       </div>
@@ -39,7 +39,7 @@
         </div>
         <div class="stat-info">
           <h3>{{ statistics.totalDoctors }}</h3>
-          <p>专业医生</p>
+          <p>{{ t('专业医生') }}</p>
         </div>
       </div>
       <div class="stat-card">
@@ -48,7 +48,7 @@
         </div>
         <div class="stat-info">
           <h3>{{ statistics.totalQuestions }}</h3>
-          <p>问题总数</p>
+          <p>{{ t('问题总数') }}</p>
         </div>
       </div>
       <div class="stat-card">
@@ -57,7 +57,7 @@
         </div>
         <div class="stat-info">
           <h3>{{ statistics.activeSessions }}</h3>
-          <p>待响应问题</p>
+          <p>{{ t('待响应问题') }}</p>
         </div>
       </div>
       <div class="stat-card">
@@ -66,14 +66,19 @@
         </div>
         <div class="stat-info">
           <h3>{{ statistics.totalSessions }}</h3>
-          <p>在线诊室</p>
+          <p>{{ t('在线诊室') }}</p>
         </div>
       </div>
     </section>
 
     <section class="active-rooms">
-      <h2>开放诊室</h2>
-      <p class="section-subtitle">以下医生诊室正在开放,欢迎咨询</p>
+      <h2>{{ t('开放诊室') }}</h2>
+      <p class="section-subtitle">{{ t('以下医生诊室正在开放,欢迎咨询') }}</p>
+      <a-alert v-if="store.state.doctorsError" :message="t('医生资料加载失败，请重试')" type="error" show-icon>
+        <template #action><a-button @click="store.loadDoctors().catch(() => {})">{{ t('重试') }}</a-button></template>
+      </a-alert>
+      <a-spin v-else-if="store.state.doctorsLoading" :tip="t('正在加载医生资料')" />
+      <a-empty v-else-if="!activeDoctors.length" :description="t('暂无开放诊室')" />
       <div class="rooms-grid">
         <div
           v-for="doctor in activeDoctors"
@@ -83,20 +88,20 @@
         >
           <div class="room-header">
             <img :src="doctor.avatar" :alt="doctor.name" class="doctor-avatar" />
-            <a-badge status="processing" text="在线" />
+            <a-badge status="processing" :text="t('在线')" />
           </div>
           <div class="room-body">
-            <h3>{{ doctor.name }}</h3>
-            <p class="doctor-title">{{ doctor.title }} · {{ doctor.department }}</p>
-            <p class="doctor-experience">{{ doctor.experience }}</p>
+            <h3>{{ t(doctor.name) }}</h3>
+            <p class="doctor-title">{{ t(doctor.title) }} · {{ t(doctor.department) }}</p>
+            <p class="doctor-experience">{{ t(doctor.experience) }}</p>
             <div class="doctor-specialties">
               <a-tag v-for="specialty in doctor.specialties" :key="specialty" color="blue">
-                {{ specialty }}
+                {{ t(specialty) }}
               </a-tag>
             </div>
           </div>
           <div class="room-footer">
-            <a-button type="primary" block>进入诊室</a-button>
+            <a-button type="primary" block>{{ t('进入诊室') }}</a-button>
           </div>
         </div>
       </div>
@@ -108,6 +113,7 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { store } from '../store';
+import { t } from '../locales';
 import {
   CheckCircleOutlined,
   TeamOutlined,

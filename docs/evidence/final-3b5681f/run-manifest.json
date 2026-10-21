@@ -1,0 +1,175 @@
+{
+  "codeSha": "3b5681f042fda8f31ae52c246278fc3608b811c9",
+  "lockfileSha256": "75e6175928c16978c009a057fe03f09025db57a349825fc00967413ee80524da",
+  "runId": "20261021-final-3b5681f",
+  "startedAt": "2026-10-21T06:14:07.746Z",
+  "node": "v26.8.1",
+  "completed": true,
+  "commands": [
+    {
+      "id": "backend",
+      "file": "unit-results.log",
+      "command": [
+        "mvn",
+        "-Dmaven.repo.local=/private/tmp/qa-m2",
+        "-f",
+        "server/qa-service-user/pom.xml",
+        "package"
+      ],
+      "startedAt": "2026-10-21T06:14:07.746Z",
+      "endedAt": "2026-10-21T06:14:14.315Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "09f28ef1e93a801b37ab84d342f91c4895b5edd2c9881100add3e170dbdd210d"
+    },
+    {
+      "id": "frontend",
+      "file": "unit-results.log",
+      "command": [
+        "npm",
+        "test",
+        "--prefix",
+        "web/qa-web"
+      ],
+      "startedAt": "2026-10-21T06:14:14.315Z",
+      "endedAt": "2026-10-21T06:14:14.739Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "09f28ef1e93a801b37ab84d342f91c4895b5edd2c9881100add3e170dbdd210d"
+    },
+    {
+      "id": "scripts",
+      "file": "unit-results.log",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/collect-evidence.test.cjs",
+        "scripts/tests/demo-evidence.test.cjs",
+        "scripts/tests/record-demo.test.cjs",
+        "scripts/tests/reply-assertions.test.cjs",
+        "scripts/tests/timeout-run.test.cjs"
+      ],
+      "startedAt": "2026-10-21T06:14:14.739Z",
+      "endedAt": "2026-10-21T06:14:15.331Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "09f28ef1e93a801b37ab84d342f91c4895b5edd2c9881100add3e170dbdd210d"
+    },
+    {
+      "id": "build",
+      "file": "unit-results.log",
+      "command": [
+        "npm",
+        "run",
+        "build",
+        "--prefix",
+        "web/qa-web"
+      ],
+      "startedAt": "2026-10-21T06:14:15.331Z",
+      "endedAt": "2026-10-21T06:14:19.687Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "09f28ef1e93a801b37ab84d342f91c4895b5edd2c9881100add3e170dbdd210d"
+    },
+    {
+      "id": "curl",
+      "file": "curl-results.log",
+      "command": [
+        "bash",
+        "scripts/api-test.sh"
+      ],
+      "startedAt": "2026-10-21T06:14:19.688Z",
+      "endedAt": "2026-10-21T06:14:22.385Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "9ee8595a0f376fecad177e47f825946304b39bd55877dadb23f224d894c32a25"
+    },
+    {
+      "id": "browser",
+      "file": "browser-results.log",
+      "command": [
+        "node",
+        "scripts/browser-test.cjs"
+      ],
+      "startedAt": "2026-10-21T06:14:22.385Z",
+      "endedAt": "2026-10-21T06:14:55.305Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "08a92abf426997856ebb7b98991606d6ef3113a2254886ab7aeb9eca31dfaa57"
+    },
+    {
+      "id": "database",
+      "file": "database-results.log",
+      "command": [
+        "node",
+        "scripts/database-test.cjs"
+      ],
+      "startedAt": "2026-10-21T06:14:55.305Z",
+      "endedAt": "2026-10-21T06:15:01.953Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "7dc73fb12fb172075484ae12a5ed8ff6cd21a9d46b8801ea4c56aa197c28b083"
+    },
+    {
+      "id": "timeout",
+      "file": "timeout-results.log",
+      "command": [
+        "node",
+        "scripts/session-timeout-run.cjs"
+      ],
+      "startedAt": "2026-10-21T06:15:01.953Z",
+      "endedAt": "2026-10-21T06:16:10.184Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "f27ca221346d41186a267d03c8672c7c23a5445519724106e399906de0ebec7a"
+    },
+    {
+      "id": "restart",
+      "file": "restart-results.log",
+      "command": [
+        "node",
+        "scripts/session-restart-test.cjs"
+      ],
+      "startedAt": "2026-10-21T06:16:10.186Z",
+      "endedAt": "2026-10-21T06:16:14.018Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "ccb1aaff689293fc1b90f9d7a9d796ec20918eecf542287201b4834bbb8b18cb"
+    },
+    {
+      "id": "audit",
+      "file": "audit-results.json",
+      "command": [
+        "npm",
+        "audit",
+        "--prefix",
+        "web/qa-web",
+        "--json"
+      ],
+      "startedAt": "2026-10-21T06:16:14.018Z",
+      "endedAt": "2026-10-21T06:16:15.230Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "048d8437ce09f5d4fccd1b349459ed9e705af8a7c530a9fd13f6ad4e5f9c405b"
+    },
+    {
+      "id": "dependencies",
+      "file": "dependencies.log",
+      "command": [
+        "npm",
+        "ls",
+        "--prefix",
+        "web/qa-web",
+        "vite",
+        "@vitejs/plugin-vue",
+        "esbuild"
+      ],
+      "startedAt": "2026-10-21T06:16:15.230Z",
+      "endedAt": "2026-10-21T06:16:15.389Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "df7c5b9377a511e88eb0031b188dd0e3a2a80c97cc89e8d556d2c53f99309aeb"
+    }
+  ],
+  "endedAt": "2026-10-21T06:16:15.418Z"
+}

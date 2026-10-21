@@ -95,6 +95,10 @@
       @ok="submitAnswer"
       @cancel="closeAnswerModal"
       :confirmLoading="submitting"
+      :cancelButtonProps="{ disabled: submitting }"
+      :closable="!submitting"
+      :maskClosable="!submitting"
+      :keyboard="!submitting"
     >
       <div v-if="selectedQuestion" class="modal-content">
         <div class="question-info">
@@ -102,7 +106,7 @@
           <p><strong>问题:</strong> {{ selectedQuestion.question }}</p>
         </div>
         <a-form-item label="您的回复">
-          <a-textarea
+          <a-textarea :disabled="submitting"
             v-model:value="answerText"
             :rows="6"
             placeholder="请输入您的专业建议和回复..."
@@ -114,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { message } from 'ant-design-vue';
 import dayjs from 'dayjs';
@@ -126,7 +130,8 @@ import {
   EditOutlined,
   CheckOutlined
 } from '@ant-design/icons-vue';
-import { store, Question } from '../store';
+import { store } from '../store';
+import type { Question } from '../store';
 
 const route = useRoute();
 const router = useRouter();
@@ -152,22 +157,22 @@ const selectedQuestion = ref<Question | null>(null);
 const answerText = ref('');
 const submitting = ref(false);
 
-onMounted(() => {
-  if (!currentDoctor.value || currentDoctor.value.username !== username) {
-    message.error('请先登录');
-    router.push('/doctor/login');
+watch(() => [store.state.sessionReady, currentDoctor.value, route.params.username], () => {
+  if (!store.state.sessionReady) return;
+  if (!currentDoctor.value || currentDoctor.value.username !== route.params.username) {
+    answerModalVisible.value = false; selectedQuestion.value = null; answerText.value = '';
+    void router.replace('/doctor/login');
   }
-});
+}, { immediate: true });
 
 const copyRoomUrl = () => {
   navigator.clipboard.writeText(roomUrl.value);
   message.success('诊室链接已复制到剪贴板');
 };
 
-const logout = () => {
-  store.logoutDoctor();
-  message.success('已退出登录');
-  router.push('/');
+const logout = async () => {
+  try { await store.logout(); message.success('已退出登录'); await router.push('/'); }
+  catch (error) { message.error((error as Error).message); }
 };
 
 const refreshQuestions = () => {
@@ -185,32 +190,36 @@ const showAnswerModal = (question: Question) => {
 };
 
 const closeAnswerModal = () => {
+  if (submitting.value) return;
   answerModalVisible.value = false;
   selectedQuestion.value = null;
   answerText.value = '';
 };
 
-const submitAnswer = () => {
-  if (!answerText.value.trim()) {
-    message.error('请输入回复内容');
-    return;
-  }
-
+const submitAnswer = async () => {
+  if (!answerText.value.trim() || !selectedQuestion.value || submitting.value) return;
+  // 保存问题 ID 与文本，后续仅使用本次提交快照。
+  const payload = { id: selectedQuestion.value.id, doctorId: selectedQuestion.value.doctorId, answer: answerText.value.trim() };
   submitting.value = true;
-
-  setTimeout(() => {
-    if (selectedQuestion.value) {
-      store.answerQuestion(selectedQuestion.value.id, answerText.value);
-      message.success('回复成功');
-      closeAnswerModal();
-    }
-    submitting.value = false;
-  }, 500);
+  try {
+    await store.runAsCurrent(() => {
+      if (payload.doctorId !== currentDoctor.value?.id) throw new Error('问题不属于当前医生');
+      store.answerQuestion(payload.id, payload.answer);
+    });
+    message.success('回复成功'); submitting.value = false; closeAnswerModal();
+  } catch (error) { message.error((error as Error).message); }
+  finally { submitting.value = false; }
 };
 
-const markAsAnswered = (questionId: string) => {
-  store.markQuestionAsAnswered(questionId);
-  message.success('已标记为已解答');
+const markAsAnswered = async (questionId: string) => {
+  try {
+    await store.runAsCurrent(() => {
+      const question = store.state.questions.find(q => q.id === questionId);
+      if (question?.doctorId !== currentDoctor.value?.id) throw new Error('问题不属于当前医生');
+      store.markQuestionAsAnswered(questionId);
+    });
+    message.success('已标记为已解答');
+  } catch (error) { message.error((error as Error).message); }
 };
 </script>
 

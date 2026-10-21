@@ -1,0 +1,25 @@
+{
+  "reviewedAt": "2026-10-21T07:11:26.505930+00:00",
+  "reviewedHead": "01dbb43c11d3b5e8aaa9d9215d910fa0fe5b86b8",
+  "runId": "20261021-install-c4c5e54",
+  "codeSha": "c4c5e5432f688dba946e6740e10f2d1a350d1afa",
+  "manifestSha256": "c3958d66cc7a401938bf1ff413b6aa8590f07cb17ff66736cb5dd3a1ca687595",
+  "scopeSha256": "bc40a7af911fe0c4b89787dc73676d2b4e99027eb8ba936fc53bba3da9953895",
+  "checks": {
+    "sevenCommandOrderAndExitCodes": true,
+    "sevenLogHashes": true,
+    "lockMatchesOriginalRunTestedCommitAndHead": true,
+    "applicationAndScriptsUnchanged": true,
+    "frontendPassed": 18,
+    "scriptsPassed": 35,
+    "backendPassed": 14,
+    "buildSuccess": true,
+    "auditVulnerabilities": 0,
+    "currentRuntimeJarMatchesRecordedBeforeAndAfter": true
+  },
+  "limits": [
+    "Evidence review only; no install or tests rerun.",
+    "scope.json is auxiliary metadata, not one of the original seven command outputs.",
+    "Current JAR comparison corroborates recorded hashes, not continuous filesystem monitoring."
+  ]
+}

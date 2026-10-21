@@ -8,24 +8,27 @@
       <a-menu v-model:selectedKeys="selectedKeys" mode="horizontal" class="nav-menu">
         <a-menu-item key="home" @click="navigateTo('/')">
           <HomeOutlined />
-          首页
+          {{ homeText('首页') }}
         </a-menu-item>
         <a-menu-item key="consultation" @click="navigateTo('/consultation')">
           <MessageOutlined />
-          问诊
+          {{ homeText('问诊') }}
         </a-menu-item>
         <a-menu-item key="doctors" @click="navigateTo('/doctors')">
           <TeamOutlined />
-          医生
+          {{ homeText('医生') }}
         </a-menu-item>
         <a-menu-item key="about" @click="navigateTo('/about')">
           <InfoCircleOutlined />
-          关于
+          {{ homeText('关于') }}
         </a-menu-item>
       </a-menu>
+      <select v-if="route.path === '/'" aria-label="Language / 语言" class="language-select" :value="locale" @change="setLocale(($event.target as HTMLSelectElement).value)">
+        <option value="zh-CN">中文</option><option value="en-US">English</option>
+      </select>
       <a-button type="primary" class="login-btn" @click="navigateTo('/doctor/login')">
         <UserOutlined />
-        医生登录
+        {{ homeText('医生登录') }}
       </a-button>
     </div>
   </a-layout-header>
@@ -33,11 +36,13 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { locale, setLocale, t } from '../locales';
 import { useRouter, useRoute } from 'vue-router';
 import { HomeOutlined, MessageOutlined, TeamOutlined, InfoCircleOutlined, UserOutlined } from '@ant-design/icons-vue';
 
 const router = useRouter();
 const route = useRoute();
+const homeText = (text: string) => route.path === '/' ? t(text) : text;
 const selectedKeys = ref<string[]>(['home']);
 
 watch(() => route.path, (newPath) => {
@@ -117,4 +122,6 @@ const navigateTo = (path: string) => {
   background: #73d13d;
   border-color: #73d13d;
 }
+.language-select { padding: 5px 8px; margin-right: 12px; border: 1px solid #ccc; border-radius: 4px; background: white; max-width: 105px; }
+@media(max-width: 800px) { .logo span { display:none; } .nav-menu { margin:0 6px; min-width:0; } .header-content { padding:0 8px; } .language-select { margin-right:6px; } .login-btn { padding:4px 6px; } }
 </style>

@@ -1,0 +1,6 @@
+PASS database repeated initialization preserves 5 doctors, 5 patients, 10 accounts
+PASS database SQL change is visible through API and actual doctors page
+PASS database demo modification restored
+ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (2)
+ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/var/run/mysqld/mysqld.sock' (2)
+PASS database restart preserves rows and Chinese encoding without deleting volume

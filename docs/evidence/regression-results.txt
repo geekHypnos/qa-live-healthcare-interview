@@ -1,0 +1,9 @@
+新增问题先复现，再修复：
+- optionalPatientFieldsMayBeNull：预期 200，实际 500。
+- usernameLengthIsCheckedAfterTrimming：预期 200，实际 400。
+- failed logout during restore：预期 sessionReady=true，实际 false。
+初次新增回归运行：后端 14 项中 2 项失败，前端 9 项中 1 项失败。
+修复后完整运行：后端 14 项、前端 12 项全部通过，无跳过。
+负向对照：临时反转 logout finally 的版本条件，新增退出回归失败；恢复源码后完整 12 项通过。
+第一次条件替换误选了 restore 的同名条件，未检测到目标缺陷；随后限定 logout 注释所在代码块重做，成功检测。未把第一次结果计为有效变异检测。
+录制门槛：旧的固定 37 次判断拒绝真实的 48 次完整结果；改为匹配完整通过标记及实际数量后接受，仍要求浏览器成功标记。

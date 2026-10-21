@@ -3,30 +3,30 @@
     <div class="footer-content">
       <div class="footer-section">
         <h3>QA Live Healthcare</h3>
-        <p>专业的在线医疗问诊平台</p>
-        <p>为您提供便捷、专业的医疗咨询服务</p>
+        <p>{{ homeText('专业的在线医疗问诊平台') }}</p>
+        <p>{{ homeText('为您提供便捷、专业的医疗咨询服务') }}</p>
       </div>
       <div class="footer-section">
-        <h4>快速链接</h4>
+        <h4>{{ homeText('快速链接') }}</h4>
         <ul>
-          <li><a href="/">首页</a></li>
-          <li><a href="/consultation">问诊</a></li>
-          <li><a href="/doctors">医生团队</a></li>
-          <li><a href="/about">关于我们</a></li>
+          <li><a href="/">{{ homeText('首页') }}</a></li>
+          <li><a href="/consultation">{{ homeText('问诊') }}</a></li>
+          <li><a href="/doctors">{{ homeText('医生团队') }}</a></li>
+          <li><a href="/about">{{ homeText('关于我们') }}</a></li>
         </ul>
       </div>
       <div class="footer-section">
-        <h4>联系我们</h4>
-        <p>客服热线: 400-123-4567</p>
-        <p>服务时间: 周一至周日 8:00-22:00</p>
-        <p>邮箱: service@qalive.com</p>
+        <h4>{{ homeText('联系我们') }}</h4>
+        <p>{{ homeText('客服热线: 400-123-4567') }}</p>
+        <p>{{ homeText('服务时间: 周一至周日 8:00-22:00') }}</p>
+        <p>{{ homeText('邮箱: service@qalive.com') }}</p>
       </div>
       <div class="footer-section">
-        <h4>法律信息</h4>
+        <h4>{{ homeText('法律信息') }}</h4>
         <ul>
-          <li><a href="#">隐私政策</a></li>
-          <li><a href="#">服务条款</a></li>
-          <li><a href="#">医疗免责声明</a></li>
+          <li><a href="#">{{ homeText('隐私政策') }}</a></li>
+          <li><a href="#">{{ homeText('服务条款') }}</a></li>
+          <li><a href="#">{{ homeText('医疗免责声明') }}</a></li>
         </ul>
       </div>
     </div>
@@ -37,6 +37,10 @@
 </template>
 
 <script setup lang="ts">
+import { useRoute } from 'vue-router';
+import { t } from '../locales';
+const route = useRoute();
+const homeText = (text: string) => route.path === '/' ? t(text) : text;
 </script>
 
 <style scoped>

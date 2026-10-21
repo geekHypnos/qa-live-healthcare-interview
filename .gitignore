@@ -1,0 +1,10 @@
+.env
+**/node_modules/
+**/target/
+**/dist/
+**/*.tsbuildinfo
+artifacts/
+*.webm
+*.mp4
+*.log
+.DS_Store

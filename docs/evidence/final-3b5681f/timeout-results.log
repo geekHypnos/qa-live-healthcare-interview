@@ -1,0 +1,2 @@
+PASS timeout test login on isolated 1-minute instance
+PASS timeout session naturally expires after 65 idle seconds

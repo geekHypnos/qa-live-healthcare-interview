@@ -1,0 +1,31 @@
+第二轮完整复测（2026-10-21）
+
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.653 s -- in com.leansofx.qaserviceuser.QaServiceUserApplicationTests
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.949 s -- in com.leansofx.qaserviceuser.InterviewApiTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+
+> vite-vue-typescript-starter@0.0.0 test
+> node --test tests/*.test.mjs
+
+✔ network and HTTP errors preserve distinct status (12.996292ms)
+✔ each mutation requests fresh CSRF and keeps same-origin cookies (0.652958ms)
+✔ homepage locales have matching keys and English translations (0.676375ms)
+✔ missing or unsupported saved locale defaults to Chinese (30.615625ms)
+✔ saved English restores and language changes update storage and html lang (4.620625ms)
+✔ blocked storage still allows switching and preserves unknown database text (4.728125ms)
+✔ same identity may perform a simulated action (0.353833ms)
+✔ expired, different or unavailable session never writes (0.204792ms)
+✔ old successful restore cannot resurrect logged-out identity (40.01925ms)
+✔ same-identity restore does not cancel concurrent action (7.58875ms)
+✔ old unauthorized restore does not clear a later login (5.728083ms)
+✔ failed logout during restore releases loading state without trusting old response (5.8895ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 271.97625

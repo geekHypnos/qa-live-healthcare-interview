@@ -6,6 +6,11 @@
     </div>
 
     <div class="doctors-container">
+      <a-alert v-if="store.state.doctorsError" :message="store.state.doctorsError" type="error" show-icon>
+        <template #action><a-button @click="store.loadDoctors().catch(() => {})">重试</a-button></template>
+      </a-alert>
+      <a-spin v-else-if="store.state.doctorsLoading" tip="正在加载医生资料" />
+      <a-empty v-else-if="allDoctors.length === 0" description="暂无医生资料" />
       <div class="doctors-grid">
         <a-card
           v-for="doctor in allDoctors"
@@ -50,7 +55,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { store, Doctor } from '../store';
+import { store } from '../store';
+import type { Doctor } from '../store';
 
 const router = useRouter();
 

@@ -1,0 +1,4 @@
+PASS timeout test login on isolated 1-minute instance
+PASS timeout session naturally expires after 65 idle seconds
+PASS restart old authenticated session becomes unauthorized after service restart
+PASS restart new service reconnects to MySQL and returns five doctors

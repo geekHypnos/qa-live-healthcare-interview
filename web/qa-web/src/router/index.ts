@@ -5,6 +5,7 @@ import DoctorLogin from '../views/DoctorLogin.vue';
 import DoctorRoom from '../views/DoctorRoom.vue';
 import Doctors from '../views/Doctors.vue';
 import About from '../views/About.vue';
+import { store } from '../store';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -47,6 +48,13 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+// SPA 内部跳转同样检查服务端会话，不能仅依赖首次挂载时的缓存身份。
+router.beforeEach(async to => {
+  if (to.path.startsWith('/consultation') || to.path.startsWith('/doctor/room/')) {
+    await store.restoreSession();
+  }
 });
 
 export default router;

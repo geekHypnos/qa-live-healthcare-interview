@@ -1,0 +1,19 @@
+Browser version: 151.0.7922.34
+PASS browser homepage complete translation and refresh memory
+PASS browser five MySQL doctors and Chinese-only secondary page
+PASS browser doctor failure has real retry and no JSON fallback
+PASS browser empty doctors state differs from network failure
+PASS browser direct doctor route, password error and successful patient consultation
+PASS browser patient session survives refresh
+PASS browser identity network failure blocks write and preserves draft
+PASS browser stale patient tab cannot submit after server logout
+PASS browser patient switch uses original distinct IDs
+PASS browser SPA protected-route entry revalidates expired server identity
+PASS browser visibility-restoration handler clears expired identity
+PASS browser doctor backend login and wrong-room route rejection
+PASS browser doctor can reply after backend session validation and restore session on refresh
+PASS browser stale doctor tab cannot reply after server logout
+PASS browser wrong-role login rejected in both entry points and server identity cleared
+PASS browser mark answered writes once when authenticated and never after session expiry
+PASS browser English mobile layout without horizontal overflow
+All browser checks passed.

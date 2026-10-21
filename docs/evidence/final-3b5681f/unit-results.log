@@ -1,0 +1,102 @@
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.652 s -- in com.leansofx.qaserviceuser.QaServiceUserApplicationTests
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.936 s -- in com.leansofx.qaserviceuser.InterviewApiTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Total time:  5.749 s
+
+> vite-vue-typescript-starter@0.0.0 test
+> node --test tests/*.test.mjs
+
+✔ network and HTTP errors preserve distinct status (12.065125ms)
+✔ each mutation requests fresh CSRF and keeps same-origin cookies (0.655ms)
+✔ homepage locales have matching keys and English translations (0.679958ms)
+✔ missing or unsupported saved locale defaults to Chinese (30.000959ms)
+✔ saved English restores and language changes update storage and html lang (4.124583ms)
+✔ blocked storage still allows switching and preserves unknown database text (8.658ms)
+✔ same identity may perform a simulated action (0.829166ms)
+✔ expired, different or unavailable session never writes (0.473833ms)
+✔ old successful restore cannot resurrect logged-out identity (38.2915ms)
+✔ same-identity restore does not cancel concurrent action (7.177208ms)
+✔ old unauthorized restore does not clear a later login (5.821084ms)
+✔ failed logout during restore releases loading state without trusting old response (5.788667ms)
+✔ business failure preserves verified identity (4.658209ms)
+✔ action session failure 0 has correct identity handling (4.820875ms)
+✔ action session failure 500 has correct identity handling (3.970708ms)
+✔ action session failure 401 has correct identity handling (3.682542ms)
+✔ changed server identity prevents action and clears old identity (6.859666ms)
+✔ pending action cannot clear a newer login (4.428333ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 281.675542
+one: PASS
+✔ collector records real successes, digests and refuses existing directory (113.893209ms)
+fail: FAIL
+✔ collector rejects nonzero then success (87.915459ms)
+missing: FAIL
+✔ collector rejects spawn failure (42.553459ms)
+signal: FAIL
+✔ collector rejects signal (65.350208ms)
+✔ Git guard rejects unstaged with unchanged HEAD (46.531167ms)
+✔ Git guard rejects staged with unchanged HEAD (47.101583ms)
+✔ Git guard rejects untracked with unchanged HEAD (40.852292ms)
+change: PASS
+✔ collector rejects source changed during run (70.846084ms)
+✔ valid evidence accepts actual counts without baseline hardcoding (12.832458ms)
+✔ reject missing (3.341708ms)
+✔ reject audit (3.195292ms)
+✔ reject exit (1.898833ms)
+✔ reject incomplete (1.72575ms)
+✔ reject codeSha (1.70125ms)
+✔ reject lockfileSha256 (1.60225ms)
+✔ reject runId (1.571916ms)
+✔ reject tamper (2.428875ms)
+✔ reject unit (2.124916ms)
+✔ reject zero (1.786792ms)
+✔ reject mismatch (2.63475ms)
+✔ reject marker (2.012666ms)
+✔ record cleanup read (1.68625ms)
+✔ record cleanup steps (0.701375ms)
+✔ record cleanup restore (5.905ms)
+✔ record cleanup context (1.09625ms)
+✔ record cleanup newContext (0.958875ms)
+Saved /Users/hypnos/Documents/ChatGPT/test/qa-live-healthcare-interview/artifacts/evidence/20261021-final-3b5681f/browser/interview-demo.webm
+✔ record cleanup none (0.795709ms)
+✔ recording refuses dirty source before browser launch with unchanged HEAD (53.124666ms)
+✔ reply assertion catches no write, wrong target and wrong retry text (1.228958ms)
+✔ reply assertion accepts only target change and count transition (1.128791ms)
+✔ timeout wrapper port (0.493792ms)
+✔ timeout wrapper start (0.070083ms)
+✔ timeout wrapper ready (0.072042ms)
+✔ timeout wrapper test (0.066334ms)
+✔ timeout wrapper none (0.922708ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 561.433541
+
+> vite-vue-typescript-starter@0.0.0 build
+> vue-tsc -b && vite build
+
+vite v6.4.4 building for production...
+transforming...
+✓ 3210 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     0.46 kB │ gzip:   0.30 kB
+dist/assets/index-WzsTQNBv.css     19.47 kB │ gzip:   4.09 kB
+dist/assets/index-q28_UDpM.js   1,581.10 kB │ gzip: 488.59 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.62s

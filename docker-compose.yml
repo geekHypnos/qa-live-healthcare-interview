@@ -1,0 +1,31 @@
+name: qa-healthcare-interview
+services:
+  mysql:
+    image: mysql:8.4.11
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-qa_healthcare}
+      MYSQL_USER: ${MYSQL_USER:-qa_app}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?copy .env.example to .env first}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?copy .env.example to .env first}
+    ports:
+      - "127.0.0.1:${MYSQL_PORT:-13306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d:ro
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_PASSWORD mysql -h127.0.0.1 -u$$MYSQL_USER -D$$MYSQL_DATABASE -e 'SELECT 1' >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  phpmyadmin:
+    image: phpmyadmin:5.2.3-apache
+    environment:
+      PMA_HOST: mysql
+    ports:
+      - "127.0.0.1:${PHPMYADMIN_PORT:-18081}:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+volumes:
+  mysql-data:

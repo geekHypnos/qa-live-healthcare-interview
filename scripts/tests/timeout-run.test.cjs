@@ -1,0 +1,3 @@
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const {runTimeout}=require('../session-timeout-run.cjs');
+for(const failure of ['port','start','ready','test','none'])test('timeout wrapper '+failure,async()=>{let stopped=0,started=0;const deps={checkPort:async()=>{if(failure==='port')throw Error('port')},start:()=>{started++;if(failure==='start')throw Error('start');return {}},ready:async()=>{if(failure==='ready')throw Error('ready')},test:async()=>{if(failure==='test')throw Error('test')},stop:async()=>stopped++};if(failure==='none')await runTimeout(deps);else await assert.rejects(runTimeout(deps));assert.equal(stopped,started&&failure!=='start'?1:0);});
