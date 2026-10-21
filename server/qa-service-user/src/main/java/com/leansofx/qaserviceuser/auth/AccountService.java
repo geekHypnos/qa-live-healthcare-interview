@@ -1,6 +1,7 @@
 package com.leansofx.qaserviceuser.auth;
 
 import java.util.Map;
+import java.util.Objects;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -27,7 +28,10 @@ public class AccountService {
         else if ("PATIENT".equals(role)) {
             profile = jdbc.queryForObject("SELECT id, name, birthday, phone, gender FROM patients WHERE id = ?",
                 (rs, n) -> Map.of("id", rs.getString("id"), "name", rs.getString("name"),
-                    "birthday", rs.getString("birthday"), "phone", rs.getString("phone"), "gender", rs.getString("gender")), id);
+                    // 可选资料在 SQL 中允许 NULL，对前端统一为空字符串。
+                    "birthday", Objects.toString(rs.getString("birthday"), ""),
+                    "phone", Objects.toString(rs.getString("phone"), ""),
+                    "gender", Objects.toString(rs.getString("gender"), "")), id);
         } else { throw new BadCredentialsException("Invalid role"); }
         return new SessionIdentity(role, (String) account.get("id"), profile);
     }

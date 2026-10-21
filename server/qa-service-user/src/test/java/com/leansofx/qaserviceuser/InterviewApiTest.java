@@ -82,6 +82,47 @@ class InterviewApiTest {
             .andExpect(jsonPath("$.profile.username").value("dr-zhang-wei"))
             .andExpect(jsonPath("$.profile.password").doesNotExist());
     }
+    @Test void usernameLengthIsCheckedAfterTrimming() throws Exception {
+        // 64 字符账号在数据库中合法，首尾空白不应计入账号长度。
+        String username = "u".repeat(64);
+        db.update("UPDATE accounts SET username = ? WHERE id = 'a1'", username);
+        mvc.perform(post("/api/auth/login").with(csrf()).contentType("application/json")
+            .content(credentials("  " + username + "  ", "Patient123!")))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.role").value("PATIENT"));
+    }
+    @Test void optionalPatientFieldsMayBeNull() throws Exception {
+        // SQL 允许这些字段为空，不能因 Map.of 不接受 null 而让正常账号登录失败。
+        db.update("UPDATE patients SET birthday = NULL, phone = NULL, gender = NULL WHERE id = 'patient001'");
+        mvc.perform(post("/api/auth/login").with(csrf()).contentType("application/json")
+            .content(credentials("patient001", "Patient123!")))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.profile.id").value("patient001"))
+            .andExpect(jsonPath("$.profile.phone").value(""));
+    }
+    @Test void failedAccountSwitchInvalidatesOldSession() throws Exception {
+        var login = mvc.perform(post("/api/auth/login").with(csrf()).contentType("application/json")
+            .content(credentials("patient001", "Patient123!"))).andExpect(status().isOk()).andReturn();
+        var session = (MockHttpSession) login.getRequest().getSession(false);
+        mvc.perform(post("/api/auth/login").session(session).with(csrf()).contentType("application/json")
+            .content(credentials("missing", "wrong"))).andExpect(status().isUnauthorized());
+        org.junit.jupiter.api.Assertions.assertTrue(session.isInvalid());
+        mvc.perform(get("/api/auth/me")).andExpect(status().isUnauthorized());
+    }
+    @Test void successfulLoginRotatesExistingSessionId() throws Exception {
+        var session = new MockHttpSession();
+        String previousId = session.getId();
+        mvc.perform(post("/api/auth/login").session(session).with(csrf()).contentType("application/json")
+            .content(credentials("patient001", "Patient123!"))).andExpect(status().isOk());
+        org.junit.jupiter.api.Assertions.assertNotEquals(previousId, session.getId());
+    }
+    @Test void databaseFailureReturnsSanitizedError() throws Exception {
+        db.execute("ALTER TABLE doctors RENAME TO doctors_unavailable");
+        try {
+            mvc.perform(get("/api/doctors")).andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.code").value("SERVICE_ERROR"))
+                .andExpect(jsonPath("$.message").value("服务暂不可用，请稍后重试"))
+                .andExpect(jsonPath("$.trace").doesNotExist());
+        } finally { db.execute("ALTER TABLE doctors_unavailable RENAME TO doctors"); }
+    }
     private String credentials(String username, String password) {
         return "{\"username\":\""+username+"\",\"password\":\""+password+"\"}";
     }

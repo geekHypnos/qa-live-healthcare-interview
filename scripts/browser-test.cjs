@@ -152,6 +152,37 @@ const output = path.resolve(process.env.OUTPUT_DIR || 'artifacts/browser');
     await page.waitForURL('**/doctor/login');
     ok('stale doctor tab cannot reply after server logout');
 
+    await goto('/consultation');
+    await heading('患者账号登录').waitFor();
+    await patientLogin('dr-zhang-wei', '123456');
+    await page.getByText('请使用患者账号登录', {exact:true}).waitFor();
+    assert.equal((await context.request.get(base + '/api/auth/me')).status(), 401);
+    await goto('/doctor/login');
+    await page.getByPlaceholder('请输入用户名', {exact:true}).fill('patient001');
+    await page.getByPlaceholder('请输入密码', {exact:true}).fill('Patient123!');
+    await page.getByRole('button', {name:/^登\s*录$/}).click();
+    await page.getByText('请使用医生账号登录', {exact:true}).waitFor();
+    assert.equal((await context.request.get(base + '/api/auth/me')).status(), 401);
+    ok('wrong-role login rejected in both entry points and server identity cleared');
+
+    async function doctorLogin() {
+      await page.getByPlaceholder('请输入用户名', {exact:true}).fill('dr-zhang-wei');
+      await page.getByPlaceholder('请输入密码', {exact:true}).fill('123456');
+      await page.getByRole('button', {name:/^登\s*录$/}).click();
+      await heading('张伟医生的诊室').waitFor();
+    }
+    await doctorLogin();
+    const pendingBefore = await page.locator('.question-card').count();
+    await page.getByRole('button', {name:/标记已解答/}).first().click();
+    await page.getByText('已标记为已解答', {exact:true}).waitFor();
+    assert.equal(await page.locator('.question-card').count(), pendingBefore - 1);
+    await logoutThroughSameSession();
+    await page.getByRole('button', {name:/标记已解答/}).first().click();
+    await page.waitForURL('**/doctor/login');
+    await doctorLogin();
+    assert.equal(await page.locator('.question-card').count(), pendingBefore - 1);
+    ok('mark answered writes once when authenticated and never after session expiry');
+
     await goto('/');
     await page.setViewportSize({ width: 390, height: 844 });
     await heading('Professional online medical consultations').waitFor();

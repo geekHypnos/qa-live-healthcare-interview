@@ -25,7 +25,12 @@ public class AuthController {
     private final CsrfTokenRepository csrf;
     private final HttpSessionSecurityContextRepository contexts = new HttpSessionSecurityContextRepository();
     public AuthController(AccountService accounts, CsrfTokenRepository csrf) { this.accounts = accounts; this.csrf = csrf; }
-    public record LoginRequest(@NotBlank @Size(max=64) String username, @NotBlank @Size(max=128) String password) {}
+    public record LoginRequest(@NotBlank @Size(max=64) String username, @NotBlank @Size(max=128) String password) {
+        public LoginRequest {
+            // 先规范账号再验证长度；密码保持原值，不裁剪空白。
+            if (username != null) username = username.trim();
+        }
+    }
 
     @GetMapping("/csrf") public Map<String, String> csrf(CsrfToken token) {
         return Map.of("token", token.getToken(), "headerName", token.getHeaderName());
@@ -34,7 +39,7 @@ public class AuthController {
             HttpServletRequest request, HttpServletResponse response) {
         if (body.password().getBytes(StandardCharsets.UTF_8).length > 72) throw new IllegalArgumentException("Password too long");
         SessionIdentity identity;
-        try { identity = accounts.authenticate(body.username().trim(), body.password()); }
+        try { identity = accounts.authenticate(body.username(), body.password()); }
         catch (BadCredentialsException e) {
             // 失败的账号切换不能留下上一个账号的有效身份。
             if (request.getSession(false) != null) request.getSession(false).invalidate();

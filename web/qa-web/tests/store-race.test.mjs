@@ -21,7 +21,7 @@ function loadStore(){
     if(name.includes('question-list'))return [];
     throw new Error('Unexpected import: '+name);
   }});
-  return {store:exports.store,pending};
+  return {store:exports.store,pending,authApi};
 }
 test('old successful restore cannot resurrect logged-out identity',async()=>{
   const {store,pending}=loadStore();store.applyIdentity(patient());
@@ -42,4 +42,14 @@ test('old unauthorized restore does not clear a later login',async()=>{
   await store.login('patient002','test','PATIENT');
   pending[0].reject(new ApiError(401,'expired'));await restoring;
   assert.equal(store.state.identity.profile.id,'patient002');
+});
+
+test('failed logout during restore releases loading state without trusting old response',async()=>{
+  const {store,pending,authApi}=loadStore();store.applyIdentity(patient());
+  const restoring=store.restoreSession();
+  authApi.logout=async()=>{throw new ApiError(0,'network')};
+  await assert.rejects(()=>store.logout(),/network/);
+  pending[0].resolve(patient('patient002'));await restoring;
+  assert.equal(store.state.sessionReady,true,'failed logout must not leave a permanent spinner');
+  assert.equal(store.state.identity.profile.id,'patient001');
 });

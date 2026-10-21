@@ -131,8 +131,13 @@ export const store = {
 
   async logout() {
     const version = ++authVersion;
-    await authApi.logout();
-    if (version === authVersion) this.clearIdentity();
+    try {
+      await authApi.logout();
+      if (version === authVersion) this.clearIdentity();
+    } finally {
+      // 退出失败时仍可重试；被作废的恢复请求不能负责结束本次加载状态。
+      if (version === authVersion) state.sessionReady = true;
+    }
   },
 
   async runAsCurrent<T>(action: () => T | Promise<T>): Promise<T> {
