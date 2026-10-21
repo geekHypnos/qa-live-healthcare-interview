@@ -96,6 +96,7 @@ bash scripts/api-test.sh
 (cd web/qa-web && npx playwright install chromium)
 node scripts/browser-test.cjs
 node scripts/database-test.cjs
+node scripts/session-restart-test.cjs
 ```
 
 数据库验收只修改演示医生经验字段，结束时恢复，并重启本项目 MySQL 容器，不删除数据卷。自然超时测试需另启 `SERVER_PORT=18082 SESSION_TIMEOUT=1m` 的服务，再运行 `bash scripts/session-timeout-test.sh`；正常实例仍为 30 分钟空闲过期。

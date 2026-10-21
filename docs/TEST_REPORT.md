@@ -31,6 +31,7 @@ bash scripts/api-test.sh
 BROWSER_EXECUTABLE=/path/to/installed/chromium node scripts/browser-test.cjs
 BROWSER_EXECUTABLE=/path/to/installed/chromium node scripts/database-test.cjs
 bash scripts/session-timeout-test.sh
+node scripts/session-restart-test.cjs
 ```
 
 本机因旧 Playwright 浏览器缓存缺文件，指定了已验证的 Chromium 路径；交付脚本也支持先执行 `npx playwright install chromium` 使用匹配版本。不把本机的临时缓存路径作为用户必须遵守的部署条件。
@@ -39,17 +40,17 @@ bash scripts/session-timeout-test.sh
 
 | 验证项 | 结果 | 证据 |
 | --- | --- | --- |
-| 后端完整测试和 JAR 打包 | 9 项测试通过，失败 0，跳过 0，BUILD SUCCESS | Maven Surefire 报告及下方汇总 |
-| 前端单元测试 | 8 项通过，包括 3 项会话竞态回归 | Node test runner 实际输出 |
+| 后端完整测试和 JAR 打包 | 14 项测试通过，失败 0，跳过 0，BUILD SUCCESS | [单元测试结果](evidence/unit-results.txt) |
+| 前端单元测试 | 12 项通过，包括 4 项会话竞态回归 | [单元测试结果](evidence/unit-results.txt) |
 | TypeScript 和生产构建 | 通过 | vue-tsc 与 Vite build；保留体积警告 |
-| 真实 MySQL 接口 | 37 次 curl 请求及字段断言通过，覆盖全部 5 个接口 | [接口结果](evidence/curl-results.txt) |
-| 浏览器回归 | 15 组场景通过，未观察到 pageerror | [浏览器结果](evidence/browser-results.txt) |
+| 真实 MySQL 接口 | 48 次 curl 请求及字段断言通过，覆盖全部 5 个接口 | [接口结果](evidence/curl-results.txt) |
+| 浏览器回归 | 17 组场景通过，未观察到 pageerror | [浏览器结果](evidence/browser-results.txt) |
 | 数据库 | 4 项验证通过 | [数据库结果](evidence/database-results.txt) |
 | 自然会话超时 | 独立实例配置 1 分钟，空闲 65 秒后 me 返回 401 | [生命周期结果](evidence/session-lifecycle.txt) |
 | Java 服务重启 | 独立实例重启后旧会话为 401，医生 API 重连 MySQL 成功 | 同上 |
 | 演示视频 | WebM VP8，1440×900，25 fps，1 分 53 秒，约 9.6 MiB | 完整解码和代表帧检查通过，链接见 DEMO |
 
-Maven 结果为 `QaServiceUserApplicationTests` 1 项和 `InterviewApiTest` 8 项。计划中的医生与认证测试合并在 InterviewApiTest，共用 H2 测试夹具；这没有替代后续真实 MySQL 的 curl、SQL 和页面验收。前端覆盖网络错误、HTTP 错误、CSRF 刷新、语言键、身份不匹配，以及退出后旧响应、新登录被旧 401 覆盖、同身份恢复误取消提交三个竞态。
+Maven 结果为 `QaServiceUserApplicationTests` 1 项和 `InterviewApiTest` 13 项。计划中的医生与认证测试合并在 InterviewApiTest，共用 H2 测试夹具；这没有替代后续真实 MySQL 的 curl、SQL 和页面验收。前端覆盖网络错误、HTTP 错误、CSRF 刷新、语言键、身份不匹配，以及退出后旧响应、新登录被旧 401 覆盖、同身份恢复误取消提交三个竞态。
 
 浏览器验证了完整首页翻译及刷新记忆、其他页中文、5 位医生、接口失败重试、空列表、直接医生链接、错误及正确患者登录、提问、刷新、切换患者、SPA 进入与可见性恢复校验、医生登录及错诊室拒绝、正常回复、旧标签页失效后禁止写入，以及 390px 英文布局无横向溢出。可见性回调用例通过触发对应 DOM 事件验证处理器，不将其描述为跨操作系统的窗口管理测试。
 
@@ -77,3 +78,36 @@ Maven 结果为 `QaServiceUserApplicationTests` 1 项和 `InterviewApiTest` 8 �
 ## 文档和过程
 
 PRD 模板、按模板生成的登录 PRD、功能代码、API_TEST 与测试报告按先后提交。提示词及修复过程见 prompts。没有跳过失败测试、把未执行项写成通过，或由用户手工代写功能代码。最终远程交付信息见 DEMO 和 PR。
+
+## 第二轮逐项审核
+
+日期：2026 年 10 月 21 日。本轮重新执行了上表的测试、构建、真实接口、浏览器、数据库、自然超时和服务重启。原始 README 面试要求与上游内容一致，未通过修改题目降低验收标准。
+
+| 仓库要求 | 对照结果 |
+| --- | --- |
+| 自己的 Fork、特性分支、推送并向 main 提 PR | geekHypnos 的 Fork；codex/healthcare-interview → main；沿用 PR #1，不合并 |
+| 首页右上角下拉、中英文动态切换、资源在 src/locales | 已实现；完整首页、刷新记忆和窄屏有真实浏览器证据，非首页仍为中文 |
+| MySQL、Compose、phpMyAdmin、用户服务医生 API、前后端联调 | 已实现；SQL 修改→接口→页面、幂等导入、保留卷重启均通过；phpMyAdmin 操作见视频 |
+| 患者用户名密码、PRD 模板、按模板生成 PRD 并指导实现 | 文档、提交顺序及 prompts 可追溯；账号经后端校验，不再自动开户 |
+| 涉及的全部接口使用 curl、API_TEST 和实际报告 | 五个接口全部覆盖，本轮 48 次真实请求及额外字段/Cookie 断言通过 |
+| 代码注释和文档 | 非显然的会话、空值、规范化、CSRF 和测试隔离均有说明；文档保留实际限制 |
+| 视频完整展示需求 | 首轮真实视频仍覆盖全部需求流程；匿名 HEAD 返回 200，文件 SHA-256 已核对；时间索引见 DEMO |
+| /docs 模板、PRD、设计、API_TEST、测试报告、prompts | 文件齐全，补充本轮指令、失败复现和修复结果；不把 AI 阶段任务冒充用户原话 |
+| AI Coding 过程、一日内完成、联系面试方 | 本轮仍由 AI 生成修改，开发与复核日期均为同一天；实际发送视频及 PR 由用户沿原沟通渠道完成，未冒称已代发 |
+
+### 本轮发现与处理
+
+1. **已修复：退出失败可能留下永久加载状态。** 会话恢复尚未完成时，退出增加认证版本，旧恢复响应因此被正确丢弃；但退出遇到网络错误时无人结束 loading。新增失败测试后，在退出 finally 中只结束当前版本的加载状态，保留可重试身份，不信任旧响应。
+2. **已修复：用户名长度验证时机与 PRD 不一致。** 合法的 64 字符账号加首尾空格，原先在 trim 前被 Size 拒绝。输入记录构造时先规范账号，再进行校验；密码不裁剪。该测试由 400 转为 200。
+3. **已修复：可选患者资料 NULL 导致 500。** 数据库允许生日、电话、性别为空，但 Map.of 不接受 null。现在可选资料统一输出空字符串，未新增 DTO 或通用转换层。该测试由 500 转为 200。
+4. **已修复：录制脚本耦合旧测试数量。** 写死 37 次会拒绝当前完整的 48 次结果，已改为读取完整通过标记及实际数量。现有录像未修改；本轮没有重新录制，不声称完成了第二轮录制或逐帧检查。
+5. **已补覆盖：** 后端增加失败账号切换清理旧会话、登录更新会话 ID、数据库故障的脱敏错误；curl 增加 null/超长密码、首尾空白、失败切换、真实 Cookie 属性与 ID 变化；前端增加语言默认值、恢复、存储禁用和未知资料保留；浏览器增加双向错误角色登录和医生标记的正常/过期操作。
+6. **已补可复现性：** 服务重启从一次性操作补为 session-restart-test.cjs，在独立端口自动启动、重启和停止测试进程，验证旧会话失效与 MySQL 重连。本次真实执行通过。
+
+新增回归先失败后修复。另临时反转修复条件确认测试能捕获该缺陷，恢复后 12 项前端测试全部通过。新增浏览器定位最初因按钮含图标的可访问名称而超时；改为匹配真实名称后完整重跑，业务断言未删除。[回归摘要](evidence/regression-results.txt) 记录了失败与修复，不公开 Cookie 或 token。
+
+### 范围与剩余测试边界
+
+未发现需要阻塞交付的需求遗漏，也没有必要增加架构层。继续保留现有 Vue store、轻量翻译、JDBC 与 Spring Security；不引入 JWT、Redis、通用仓储、权限后台或新的测试框架。医生认证兼容是迁移数据后保持原功能所需，CSRF 与 Cookie 检查是会话登录的配套，不是扩展题目。
+
+以下不是“全部测试已覆盖”：可见性恢复仍为真实浏览器中的 DOM 事件测试，未做操作系统切换窗口认证；不覆盖所有浏览器、无障碍、负载和渗透场景；3 项开发构建依赖审计发现仍在。问答持久化、注册、找回密码不在题目范围，本轮没有扩大实现。正式 30 分钟超时以配置及独立 1 分钟自然超时验证，不虚报等待过 30 分钟。

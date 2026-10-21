@@ -13,5 +13,7 @@ PASS browser visibility-restoration handler clears expired identity
 PASS browser doctor backend login and wrong-room route rejection
 PASS browser doctor can reply after backend session validation and restore session on refresh
 PASS browser stale doctor tab cannot reply after server logout
+PASS browser wrong-role login rejected in both entry points and server identity cleared
+PASS browser mark answered writes once when authenticated and never after session expiry
 PASS browser English mobile layout without horizontal overflow
 All browser checks passed.
