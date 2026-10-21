@@ -1,6 +1,6 @@
 # 测试报告
 
-状态：本机功能验收通过，演示视频已录制并检查。远程附件和 PR 在发布后补充链接，不将尚未发布的链接当成交付完成。
+状态：本机功能验收通过，演示视频已录制并检查。视频已上传 [GitHub Release](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/tag/interview-demo-20261021)，附件名称、大小与 SHA-256 已核对；PR 信息在创建后补充。
 
 ## 环境检查
 

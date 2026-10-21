@@ -6,7 +6,26 @@
 
 依次展示首页中文、英文正文与医生介绍、页脚、刷新保留语言；医生页面与 phpMyAdmin 中的真实记录；数据库资料变更生效并恢复；错误密码及正确患者登录；提问、刷新、退出及切换患者；医生登录、回复与退出；实际验收输出。
 
-视频通过 `scripts/record-demo.cjs` 在真实运行界面录制，底部字幕仅解释步骤，不替换界面或业务结果。视频作为附件交付，不进入 Git 源码历史。录制过程的索引由脚本输出 `artifacts/demo-timeline.json`，完成后在这里补入实际链接与时间。
+视频通过 `scripts/record-demo.cjs` 在真实运行界面录制，底部字幕仅解释步骤，不替换界面或业务结果。视频作为附件交付，不进入 Git 源码历史。录制过程的原始索引见 `artifacts/demo-timeline.json`。
+
+## 已交付视频
+
+- [Release 附件页](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/tag/interview-demo-20261021)
+- [下载 interview-demo.webm](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/download/interview-demo-20261021/interview-demo.webm)
+- 时长 1 分 53 秒，1440×900，25 fps，约 9.6 MiB。完整解码通过，并抽查代表画面。
+- SHA-256：`6271fdac43b17ca9116f7bd56157f96127e3b12974b6e40c4bc4d7e1d50df095`，与 GitHub 附件显示一致。
+
+下表是方便观看的近似时间，不是逐帧定位：
+
+| 时间 | 内容 |
+| --- | --- |
+| 00:00–00:30 | 首页中文、英文正文与页脚、刷新保留语言 |
+| 00:30–00:52 | 医生列表、phpMyAdmin、修改数据库资料并恢复 |
+| 00:52–01:21 | 患者错误和正确登录、提问、刷新、退出与切换账号 |
+| 01:21–01:34 | 医生登录、回复、退出 |
+| 01:34–01:53 | 实际接口、浏览器、数据库与超时测试结果 |
+
+Release 标签指向录制时的已验收提交 `47a27f8`；其后的提交仅补充交付链接与记录。
 
 ## 重录
 
