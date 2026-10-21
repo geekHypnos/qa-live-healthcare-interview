@@ -1,0 +1,28 @@
+{
+  "durationSeconds": 108.6,
+  "decodedFrames": 2715,
+  "width": 1440,
+  "height": 900,
+  "fps": 25,
+  "codec": "VP8",
+  "fullDecode": "passed",
+  "sha256": "7631c5aed81de199033c263924ca9020fbe623c287d8f31292d359f6974797d4",
+  "sampleSeconds": [
+    2,
+    16,
+    25,
+    37,
+    40,
+    43,
+    56,
+    65,
+    79,
+    84,
+    88,
+    95,
+    100,
+    103,
+    107
+  ],
+  "visualInspection": "passed: homepage translations, phpMyAdmin rows, DB change, patient login, question submit, actual doctor reply, audit0 and document/prompt pages"
+}

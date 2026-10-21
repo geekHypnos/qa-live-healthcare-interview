@@ -1,0 +1,2 @@
+PASS restart old authenticated session becomes unauthorized after service restart
+PASS restart new service reconnects to MySQL and returns five doctors

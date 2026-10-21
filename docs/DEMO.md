@@ -1,44 +1,45 @@
 # 演示说明
 
-先按根目录 README 启动数据库、用户服务和前端。患者使用 patient001 或 patient002，演示密码为 Patient123!；医生使用 dr-zhang-wei，演示密码为 123456。
+## 最新交付
 
-## 演示内容
+- [下载新版视频](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/download/interview-demo-20261021-3b5681f/interview-demo-3b5681f.webm) / [Release 附件页](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/tag/interview-demo-20261021-3b5681f)。
+- 对应代码：`3b5681f042fda8f31ae52c246278fc3608b811c9`；验收 runId：`20261021-final-3b5681f`。Release 标签指向该代码提交，不是 main；其后只更新交付文档和证据。
+- 时长 108.60 秒，1440×900，25 fps，VP8，9.10 MiB。
+- SHA-256：`7631c5aed81de199033c263924ca9020fbe623c287d8f31292d359f6974797d4`，已与 GitHub 附件摘要核对，匿名 HEAD 返回 200。
+- 本地原始文件：`artifacts/demo-3b5681f/interview-demo.webm`；[核验元数据](evidence/final-3b5681f/video-verification.json)。全量解码通过，抽查首页双语、数据库、登录、回复、审计和文档关键帧。
 
-依次展示首页中文、英文正文与医生介绍、页脚、刷新保留语言；医生页面与 phpMyAdmin 中的真实记录；数据库资料变更生效并恢复；错误密码及正确患者登录；提问、刷新、退出及切换患者；医生登录、回复与退出；实际验收输出。
+录像使用真实浏览器操作。字幕只解释步骤，不修改业务结果；异常回归展示本轮真实测试证据，没有伪造后端故障。问答仍为前端模拟数据，视频明确说明刷新限制。时长按实际内容和可读性记录，没有为凑时长加无关页面。
 
-视频通过 `scripts/record-demo.cjs` 在真实运行界面录制，底部字幕仅解释步骤，不替换界面或业务结果。视频作为附件交付，不进入 Git 源码历史。录制过程的原始索引见 `artifacts/demo-timeline.json`。
+### 视频关键帧索引
 
-## 已交付视频
-
-- [Release 附件页](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/tag/interview-demo-20261021)
-- [下载 interview-demo.webm](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/download/interview-demo-20261021/interview-demo.webm)
-- 时长 1 分 53 秒，1440×900，25 fps，约 9.6 MiB。完整解码通过，并抽查代表画面。
-- SHA-256：`6271fdac43b17ca9116f7bd56157f96127e3b12974b6e40c4bc4d7e1d50df095`，与 GitHub 附件显示一致。
-
-下表是方便观看的近似时间，不是逐帧定位：
+下列为逐帧抽查确认的定位点，不是每一步的起止边界。原脚本 demo-timeline.json 记录的是操作墙钟时间，与编码视频存在偏差，不直接当作视频播放时间。
 
 | 时间 | 内容 |
 | --- | --- |
-| 00:00–00:30 | 首页中文、英文正文与页脚、刷新保留语言 |
-| 00:30–00:52 | 医生列表、phpMyAdmin、修改数据库资料并恢复 |
-| 00:52–01:21 | 患者错误和正确登录、提问、刷新、退出与切换账号 |
-| 01:21–01:34 | 医生登录、回复、退出 |
-| 01:34–01:53 | 实际接口、浏览器、数据库与超时测试结果 |
-
-Release 标签指向首轮录制时的已验收提交 `47a27f8`。第二轮在 PR 中修复了三个登录边界问题并扩充测试；视频展示的需求流程未变，仍覆盖首页双语、MySQL 与患者登录。视频末尾为当时的 37 次接口与 15 组浏览器结果，本轮最新的 48 次与 17 组结果见 TEST_REPORT，不将旧录像冒充新一轮测试录屏。
+| 00:02 | 首页中文与右上角语言选择 |
+| 00:16 | English 首页 |
+| 00:25 | 英文医生与统计 |
+| 00:37 | phpMyAdmin 连接 MySQL |
+| 00:40 | doctors 表实际记录 |
+| 00:43 | 数据库修改映射医生页面 |
+| 00:56 | 患者正确登录 |
+| 01:05 | 患者提交问题成功 |
+| 01:19 | 切换患者账号 |
+| 01:24 | 医生登录 |
+| 01:28 | 实际回复文本及待回答/已回答数量变化 |
+| 01:35 | 绑定代码与运行标识的测试结果 |
+| 01:40 | 完整审计 0 及生命周期结果 |
+| 01:43 | PRD 模板等交付文档入口 |
+| 01:47 | 提示词记录入口 |
 
 ## 重录
 
-需要先实际执行 API、浏览器和数据库验收并保存脱敏日志。设置 EVIDENCE_DIR 指向日志目录，执行：
+按 README 配置数据库并启动独立 JAR 副本和 Vite。使用 Java 17，保持代码工作区干净，执行 API_TEST 中的完整采集命令，再以相同 RUN_ID 和 EVIDENCE_DIR 运行 scripts/record-demo.cjs。录制前核对代码、锁文件、清单、全部命令退出码及日志摘要；失败日志不能用来生成“全部通过”画面。旧视频保留，新录像分目录输出。
 
-```bash
-EVIDENCE_DIR=/path/to/actual/test-logs node scripts/record-demo.cjs
-```
+## 历史视频
 
-日志文件名为 curl-results.log、browser-results.log、database-results.log 和 timeout-results.log。脚本检查其中确有完整接口与浏览器成功结果；不能用示例通过记录替代实际测试。
+[首轮视频](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/download/interview-demo-20261021/interview-demo.webm) 对应 `47a27f8`，1 分 53 秒。仅供历史对照，旧测试数字不是本轮结果，未删除或覆盖旧附件。
 
-输出为 `artifacts/interview-demo.webm`。本机如使用已有兼容 Chromium，可通过 BROWSER_EXECUTABLE 指定路径。SQL 临时修改在 finally 中恢复。演示提问与回复仍是原项目前端模拟数据，刷新恢复的是服务端登录身份，不宣称新增问题被数据库持久化。
+## 代码与报告
 
-## 代码交付
-
-[PR #1](https://github.com/geekHypnos/qa-live-healthcare-interview/pull/1)：本人的 Fork 内 `codex/healthcare-interview` → `main`，保持打开，未合并。
+[PR #1](https://github.com/geekHypnos/qa-live-healthcare-interview/pull/1)：codex/healthcare-interview → 本人 Fork main，保持打开、不合并。完整结果见 [TEST_REPORT](TEST_REPORT.md)，提示词见 [prompts](prompts.md)。

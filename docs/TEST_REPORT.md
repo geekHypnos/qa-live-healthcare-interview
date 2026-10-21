@@ -1,5 +1,53 @@
 # 测试报告
 
+## 最新验收：依赖修复与新版演示（2026-10-21）
+
+本节是当前交付结果；文末旧报告仅作历史记录，不代表当前依赖版本或测试数量。
+
+- 已验收代码：`3b5681f042fda8f31ae52c246278fc3608b811c9`；运行标识：`20261021-final-3b5681f`。
+- [版本及命令清单](evidence/final-3b5681f/run-manifest.json) 记录实际命令、退出码、锁文件与日志摘要；全部命令成功，采集前后工作区干净。录制入口再次校验相同版本。
+- [新视频](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/download/interview-demo-20261021-3b5681f/interview-demo-3b5681f.webm) / [Release](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/tag/interview-demo-20261021-3b5681f)；[现有 PR #1](https://github.com/geekHypnos/qa-live-healthcare-interview/pull/1)，仍指向本人 Fork main，不合并。
+
+### 环境与结果
+
+保持 Vue 3 / TypeScript / Ant Design Vue、Spring Boot 3.5.7 / Java 17、MySQL 8.4 / phpMyAdmin。Node 26.8.1；构建链 Vite 6.4.4、插件 5.2.4、esbuild 0.25.12。Maven 显式 JAVA_HOME=Java17；运行的是 artifacts/runtime/service.jar 副本，后续打包不覆盖存活进程文件。
+
+| 验证 | 实际结果 | 证据 |
+| --- | --- | --- |
+| 后端单元及 package | 14 项通过，失败/跳过 0 | [单元与构建](evidence/final-3b5681f/unit-results.log) |
+| 前端单元 | 18 项通过，失败/跳过 0 | 同上 |
+| 采集/证据/录像/超时包装/回复断言测试 | 35 项通过，失败/跳过 0，不混入前端数量 | 同上 |
+| TypeScript 与生产构建 | 通过，保留原大包警告 | 同上 |
+| 五个接口真实 curl | 48 次通过 | [接口](evidence/final-3b5681f/curl-results.log) |
+| 浏览器 | 25 组通过，含独立故障注入及负向对照，检查 pageerror | [浏览器](evidence/final-3b5681f/browser-results.log) |
+| 数据库 | 4 项通过：幂等、修改映射页面、恢复、保留卷重启 | [数据库](evidence/final-3b5681f/database-results.log) |
+| 自然超时 | 独立 1 分钟配置，真实空闲 65 秒后 401 | [超时](evidence/final-3b5681f/timeout-results.log) |
+| 服务重启 | 旧会话失效，医生 API 重连 MySQL | [重启](evidence/final-3b5681f/restart-results.log) |
+| 完整依赖审计 | 从 3 个受影响包（1 high、2 moderate）降为 0 | [升级前](evidence/final-3b5681f/audit-before.json) / [最终](evidence/final-3b5681f/audit-results.json) |
+| 录像 | 108.60 秒，1440×900，VP8/25 fps，全量解码与关键帧检查 | [核验](evidence/final-3b5681f/video-verification.json) |
+
+### 本轮修复与有效性检查
+
+1. 等待会话检查时，患者/医生弹窗锁定输入、关闭和取消，提交使用快照；不会取消后写入空内容。网络及 5xx 后恢复编辑/取消/重试，401 仍强制清理旧草稿。
+2. 业务验证异常不再误清登录；身份变化或明确 401 阻止旧操作，不清理新账号。
+3. 问诊页补齐医生加载中、失败重试、空列表；保留草稿，错误链接不静默选中其他医生。
+4. 回复断言绑定目标问题 ID、原文本、状态与列表数量，其他记录必须不变；空操作、错误目标和错误文本均有负向检测。
+5. SQL 读取/恢复、页面步骤与浏览器关闭失败均进入独立资源清理；失败不发布录像。
+6. 采集器验证真实子进程失败、信号、目录覆盖；Git 检查覆盖暂存/未暂存/未跟踪代码；录制拒绝旧 SHA、锁摘要、runId、缺失或被改写日志，以及空跑/数量不一致的测试。
+
+### 失败记录与真实限制
+
+新增业务错误身份保留、待提交控件锁定测试先失败后修复。回复负向对照在旧 Vite HMR 状态下没有命中同一个模块，重启全新进程后重新验证；没有以此删断言。Maven 初次选用 Java26 导致 Mockito 错误，明确 JAVA_HOME=17 后重跑成功。
+
+首轮冻结运行 `20261021-final-885f03d` 期间补充了空跑/数量不一致的证据反例，结束时被 Git 门槛拒绝。该运行 completed=false，未用于视频或最终报告；本节结果来自新提交下从头完成的独立运行，没有复制旧日志。
+
+问答仍是前端模拟数据，不保证刷新持久化；自然超时验证的是独立 1 分钟配置而非等待正式 30 分钟。外部头像依赖网络。保留构建体积提示，不新增拆包重构；审计归零不等于不存在未知漏洞。提示词记录见 prompts.md；发送视频和 PR 给面试方仍由用户沿原渠道完成。
+
+---
+
+# 历史验收记录（旧版本，以下数字与旧视频不作为当前结果）
+
+
 状态：本机功能验收通过，演示视频已录制并检查。视频已上传 [GitHub Release](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/tag/interview-demo-20261021)，附件名称、大小与 SHA-256 已核对；[PR #1](https://github.com/geekHypnos/qa-live-healthcare-interview/pull/1) 已创建，指向本人 Fork 的 main，未合并。
 
 ## 环境检查
