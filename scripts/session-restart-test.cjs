@@ -10,7 +10,7 @@ const java = process.env.JAVA_HOME ? path.join(process.env.JAVA_HOME, 'bin/java'
 let service;
 
 async function start() {
-  service = spawn(java, ['-Xmx192m', '-jar', 'server/qa-service-user/target/qa-service-user-0.0.1-SNAPSHOT.jar'], {
+  service = spawn(java, ['-Xmx192m', '-jar', process.env.TEST_JAR || 'artifacts/runtime/service.jar'], {
     cwd: root, env: {...process.env, SERVER_PORT: String(port)}, stdio: 'ignore',
   });
   let startError;
