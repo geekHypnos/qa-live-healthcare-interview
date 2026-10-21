@@ -5,7 +5,8 @@
 - 需求来源：[原仓库 README](https://github.com/ups216/qa-live-healthcare-interview#readme)。下文 R/T/D/P 编号为本项目追踪编号，不是上游原有编号。
 - 测试代码版本：`3b5681f042fda8f31ae52c246278fc3608b811c9`。
 - 实际运行：`20261021-final-3b5681f`，2026-10-21 14:14:07–14:16:15（Asia/Shanghai）。[清单](evidence/final-3b5681f/run-manifest.json)记录 11 条命令，全部退出码为 0。
-- 本文整理日期：2026-10-21。实际结果取自上述运行、同版视频及交付核查；本次文档整理没有重跑业务测试。代码冻结后的提交仅涉及文档与证据。
+- 安装补充验收：`20261021-install-c4c5e54`，绑定提交 `c4c5e5432f688dba946e6740e10f2d1a350d1afa`；[独立清单](evidence/install-c4c5e54/run-manifest.json)记录 npm ci 及其后测试/构建/审计，共 7 条命令。该提交与原验收版本仅有文档/证据差异，锁文件摘要相同；仅 OPS-01 使用本轮新结果，其他业务用例仍引用原运行。
+- 本文整理日期：2026-10-21。除 OPS-01 的新安装验收外，实际结果取自原运行、同版视频及交付核查；本轮未重跑接口、浏览器和数据库业务测试。代码冻结后的提交仅涉及文档与证据。
 - 下表是业务场景归并，不是测试框架计数：后端 14 项、前端 18 项、脚本 35 项、curl 48 次请求、浏览器 25 组、数据库 4 项分别统计，不能相加成一个“用例总数”。curl 中包含多次取得 CSRF token。
 
 ## 2. 需求对应关系
@@ -449,17 +450,17 @@ node scripts/session-restart-test.cjs
 | 实际结果 | 通过；另一个首轮真实运行因中途源码变更被拒绝，未用于交付 |
 | 对应证据 | [单元日志](evidence/final-3b5681f/unit-results.log)：collector、Git guard、reject 系列、recording refuses dirty source；[最终清单](evidence/final-3b5681f/run-manifest.json) |
 
-### OPS-01 干净安装、构建与审计
+### OPS-01 干净安装、构建与审计（已补独立证据）
 
 | 字段 | 内容 |
 | --- | --- |
 | 关联需求 | X1 |
 | 验证方式 | npm/Maven 实际命令 |
 | 前置条件 | E1/E2；固定 Vite/插件版本与锁文件 |
-| 操作步骤 | 1. 执行 npm ci，检查依赖树<br>2. 执行前后端测试、vue-tsc/build<br>3. 执行完整 npm audit --json |
+| 操作步骤 | 1. 在干净提交下执行 npm ci --prefix web/qa-web，单独保存原始输出<br>2. 顺序运行前端、脚本测试及 vue-tsc/build，然后用 Java 17 执行 Maven test（不 package、不复制 JAR）<br>3. 执行完整 npm audit --json 和指定依赖树检查，核对运行 JAR 摘要不变 |
 | 预期结果 | 可重装，无非法依赖；测试与构建成功；全量漏洞数为 0 |
-| 实际结果 | 构建、测试、指定依赖树与当次完整 audit 通过，audit 从 3 个受影响包降为 0，保留大包警告。npm ci 仅有前期过程记录，不在最终 11 条命令内，缺少该步骤独立原始日志，不能称为同次采集通过 |
-| 对应证据 | [单元日志](evidence/final-3b5681f/unit-results.log)；[依赖树](evidence/final-3b5681f/dependencies.log)；[完整审计](evidence/final-3b5681f/audit-results.json)；[升级前审计](evidence/final-3b5681f/audit-before.json)；[安装过程记录](prompts.md)（非原始安装日志） |
+| 实际结果 | 本轮独立验收通过：npm ci 新装 85 个包、审计 86 个包；随后前端 18、脚本 35、后端 14 项测试通过，类型检查/构建成功，完整 audit=0，7 条命令均 exit 0。Vite 6.4.4/插件 5.2.4/esbuild 0.25.12 不变。保留 npm allowScripts 提示及构建大包警告；不声称无警告。运行 JAR 前后摘要一致 |
+| 对应证据 | [npm ci 原始日志](evidence/install-c4c5e54/npm-ci.log)、[前端测试](evidence/install-c4c5e54/frontend-test.log)、[脚本测试](evidence/install-c4c5e54/script-test.log)、[后端测试汇总](evidence/install-c4c5e54/backend-test.log)、[构建](evidence/install-c4c5e54/build.log)、[审计](evidence/install-c4c5e54/audit-results.json)、[依赖树](evidence/install-c4c5e54/dependencies.log)、[清单](evidence/install-c4c5e54/run-manifest.json)、[JAR 与执行范围](evidence/install-c4c5e54/scope.json) |
 
 ## 6. 文档与交付核查（不计入自动测试数量）
 
@@ -555,3 +556,9 @@ node scripts/session-restart-test.cjs
 - 明确回归组使用模拟身份，不等同于真实登录；补列已有超时包装器清理单元覆盖。
 
 38 项场景的必填字段、相对链接及最终清单 11 条命令的日志 SHA-256 已复核。源码/测试脚本仍与验收提交一致；新增文档不改变原运行的时间、通过数和摘要。上述“过程证据不足”项保留为限制，不虚填通过，也不通过新增框架或无关用例扩大范围。
+
+## 10. 安装证据补齐（2026-10-21）
+
+第 9 节记录的是上轮复核时的状态。OPS-01 所缺 npm ci 独立日志现由新运行补齐，不回填旧运行或改写旧证据。新运行始于干净提交 c4c5e54，使用原锁文件与原技术栈；具体命令、起止时间、退出码和摘要见独立清单。收集器按原规则只发布后端测试汇总，npm ci 输出单独原样保留。
+
+未运行 curl、浏览器、数据库、自然超时/重启业务验收，未生成新视频；它们的结果仍属于 3b5681f 原运行。安装脚本 allowScripts 提示未通过自动批准或升级依赖消除，现有安装后的测试和构建已通过；这不证明每个可选平台安装脚本均执行。后端仅运行 test，不生成或替换运行 JAR。

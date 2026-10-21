@@ -1,0 +1,125 @@
+{
+  "codeSha": "c4c5e5432f688dba946e6740e10f2d1a350d1afa",
+  "lockfileSha256": "75e6175928c16978c009a057fe03f09025db57a349825fc00967413ee80524da",
+  "runId": "20261021-install-c4c5e54",
+  "startedAt": "2026-10-21T07:04:33.350Z",
+  "node": "v26.8.1",
+  "completed": true,
+  "commands": [
+    {
+      "id": "install",
+      "file": "npm-ci.log",
+      "command": [
+        "npm",
+        "ci",
+        "--prefix",
+        "web/qa-web"
+      ],
+      "startedAt": "2026-10-21T07:04:33.350Z",
+      "endedAt": "2026-10-21T07:04:37.543Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "73e4ebafa9f3df7ce710fc7e31104b077469af93b3921e7498eb08200691d6d2"
+    },
+    {
+      "id": "frontend",
+      "file": "frontend-test.log",
+      "command": [
+        "npm",
+        "test",
+        "--prefix",
+        "web/qa-web"
+      ],
+      "startedAt": "2026-10-21T07:04:37.543Z",
+      "endedAt": "2026-10-21T07:04:38.108Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "029ab59d859def223b8ce10e6ea5579025967b0caa975e8ac9b9e4e6da3860b4"
+    },
+    {
+      "id": "scripts",
+      "file": "script-test.log",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/collect-evidence.test.cjs",
+        "scripts/tests/demo-evidence.test.cjs",
+        "scripts/tests/record-demo.test.cjs",
+        "scripts/tests/reply-assertions.test.cjs",
+        "scripts/tests/timeout-run.test.cjs"
+      ],
+      "startedAt": "2026-10-21T07:04:38.108Z",
+      "endedAt": "2026-10-21T07:04:38.719Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "206c8b12cf374b8201a78bdb3f284e4edcaa3488500650eacee15e8cd82d37ff"
+    },
+    {
+      "id": "build",
+      "file": "build.log",
+      "command": [
+        "npm",
+        "run",
+        "build",
+        "--prefix",
+        "web/qa-web"
+      ],
+      "startedAt": "2026-10-21T07:04:38.719Z",
+      "endedAt": "2026-10-21T07:04:44.657Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "d193a8a3620228ad99119002cb350f1b30148b9730b7321a3a207f5c264cdcc4"
+    },
+    {
+      "id": "backend",
+      "file": "backend-test.log",
+      "command": [
+        "mvn",
+        "-Dmaven.repo.local=/private/tmp/qa-m2",
+        "-f",
+        "server/qa-service-user/pom.xml",
+        "test"
+      ],
+      "startedAt": "2026-10-21T07:04:44.657Z",
+      "endedAt": "2026-10-21T07:04:51.398Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "a2b9d6bab58b88734f23dee567b24c9619bbed19a5950f2b0a64c2501e0b6db1"
+    },
+    {
+      "id": "audit",
+      "file": "audit-results.json",
+      "command": [
+        "npm",
+        "audit",
+        "--prefix",
+        "web/qa-web",
+        "--json"
+      ],
+      "startedAt": "2026-10-21T07:04:51.398Z",
+      "endedAt": "2026-10-21T07:04:52.748Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "048d8437ce09f5d4fccd1b349459ed9e705af8a7c530a9fd13f6ad4e5f9c405b"
+    },
+    {
+      "id": "dependencies",
+      "file": "dependencies.log",
+      "command": [
+        "npm",
+        "ls",
+        "--prefix",
+        "web/qa-web",
+        "vite",
+        "@vitejs/plugin-vue",
+        "esbuild"
+      ],
+      "startedAt": "2026-10-21T07:04:52.748Z",
+      "endedAt": "2026-10-21T07:04:52.920Z",
+      "exitCode": 0,
+      "signal": null,
+      "sha256": "df7c5b9377a511e88eb0031b188dd0e3a2a80c97cc89e8d556d2c53f99309aeb"
+    }
+  ],
+  "endedAt": "2026-10-21T07:04:52.935Z"
+}

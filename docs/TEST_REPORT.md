@@ -1,5 +1,26 @@
 # 测试报告
 
+## 安装后补充验收（2026-10-21）
+
+- 提交：`c4c5e5432f688dba946e6740e10f2d1a350d1afa`；运行：`20261021-install-c4c5e54`。与原业务验收提交相比仅有文档/证据变化，应用、脚本与锁文件未变。
+- [独立清单](evidence/install-c4c5e54/run-manifest.json)记录顺序执行的 7 条命令，均 exit 0，日志 SHA-256 已核对；采集前后 Git 干净。
+
+| 项目 | 本次实际结果 | 证据 |
+| --- | --- | --- |
+| npm ci | 新装 85 包，审计 86 包，exit 0 | [原始日志](evidence/install-c4c5e54/npm-ci.log) |
+| 前端测试 | 18 通过，0 失败/跳过 | [日志](evidence/install-c4c5e54/frontend-test.log) |
+| 脚本测试 | 35 通过，0 失败/跳过 | [日志](evidence/install-c4c5e54/script-test.log) |
+| 类型检查与构建 | vue-tsc -b、Vite build 成功 | [日志](evidence/install-c4c5e54/build.log) |
+| 后端测试 | Java 17，Maven test，14 通过 | [测试汇总](evidence/install-c4c5e54/backend-test.log) |
+| 全量依赖审计 | 0 | [JSON](evidence/install-c4c5e54/audit-results.json) |
+| 构建链依赖 | Vite 6.4.4、插件 5.2.4、esbuild 0.25.12，exit 0 | [依赖树](evidence/install-c4c5e54/dependencies.log) |
+
+环境检查时未发现 Java/Vite 进程，可用磁盘约 2.5 GiB；原 node_modules 约 243 MiB。后端只执行 test，不 package、不复制 JAR。[范围及摘要记录](evidence/install-c4c5e54/scope.json)确认运行副本前后 SHA-256 均为 `6bb9416b905eaa3b6faf74fd79cef68ed570f2689d9c6fba50778432c16b6958`。
+
+保留警告：npm 提示 core-js、esbuild 及两个版本 fsevents 的安装脚本未被 allowScripts 覆盖；未自动批准脚本或修改依赖来消除提示，不能声称所有平台可选脚本均执行。前端仍有超过 500 kB 的 chunk 警告。它们未导致本轮测试或构建失败。
+
+本次补齐的是安装与安装后测试/构建证据，不是整套业务验收重跑：curl、浏览器、数据库、会话生命周期及视频继续引用下方 3b5681f 的原证据，旧清单不变。
+
 逐项场景、前置条件、操作步骤、预期/实际结果及原仓库需求对应关系见 [正式测试用例](TEST_CASES.md)。该文档整理已有验收证据，不代表重新执行测试。
 
 ## 最新验收：依赖修复与新版演示（2026-10-21）
@@ -10,7 +31,7 @@
 - [版本及命令清单](evidence/final-3b5681f/run-manifest.json) 记录实际命令、退出码、锁文件与日志摘要；全部命令成功，采集前后工作区干净。录制入口再次校验相同版本。
 - [新视频](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/download/interview-demo-20261021-3b5681f/interview-demo-3b5681f.webm) / [Release](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/tag/interview-demo-20261021-3b5681f)；[现有 PR #1](https://github.com/geekHypnos/qa-live-healthcare-interview/pull/1)，仍指向本人 Fork main，不合并。
 
-文档复核补充：正式用例已区分真实 API、模拟身份和合成可见性事件；npm ci 只有前期过程记录，不在最终采集命令中。AI 过程完整性及面试方收件/期限不能由自动测试独立证明，详见 [用例复核结论](TEST_CASES.md#9-本轮文档复核2026-10-21)。本次未重跑测试。
+文档复核补充：正式用例已区分真实 API、模拟身份和合成可见性事件；当时 npm ci 只有前期过程记录，不在该 11 条采集命令中；此缺口现已由上方独立安装验收补齐。AI 过程完整性及面试方收件/期限不能由自动测试独立证明，详见 [用例复核结论](TEST_CASES.md#9-本轮文档复核2026-10-21)。本次未重跑测试。
 
 ### 环境与结果
 
