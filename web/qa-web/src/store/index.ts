@@ -1,12 +1,12 @@
 import { reactive } from 'vue';
-import doctorData from '../data/doctor-user-list.json';
-import patientData from '../data/patient-user.json';
+import { request, ApiError } from '../api/client';
+import { authApi, type SessionIdentity } from '../api/auth';
+import { verifyBeforeAction } from '../api/session';
 import questionData from '../data/question-list.json';
 
 export interface Doctor {
   id: string;
   username: string;
-  password: string;
   name: string;
   title: string;
   department: string;
@@ -39,15 +39,23 @@ export interface Question {
 
 interface State {
   doctors: Doctor[];
-  patients: Patient[];
+  doctorsLoading: boolean;
+  doctorsError: string;
+  sessionReady: boolean;
+  sessionError: string;
+  identity: SessionIdentity | null;
   questions: Question[];
   currentDoctor: Doctor | null;
   currentPatient: Patient | null;
 }
 
 const state = reactive<State>({
-  doctors: doctorData as Doctor[],
-  patients: patientData as Patient[],
+  doctors: [],
+  doctorsLoading: false,
+  doctorsError: '',
+  sessionReady: false,
+  sessionError: '',
+  identity: null,
   questions: questionData as Question[],
   currentDoctor: null,
   currentPatient: null,
@@ -56,43 +64,70 @@ const state = reactive<State>({
 export const store = {
   state,
 
-  loginDoctor(username: string, password: string): Doctor | null {
-    const doctor = state.doctors.find(
-      d => d.username === username && d.password === password
-    );
-    if (doctor) {
-      state.currentDoctor = doctor;
-      return doctor;
-    }
-    return null;
+  async loadDoctors() {
+    state.doctorsLoading = true;
+    state.doctorsError = '';
+    try { state.doctors = await request<Doctor[]>('/doctors'); }
+    catch (error) { state.doctorsError = (error as Error).message; throw error; }
+    finally { state.doctorsLoading = false; }
   },
 
-  logoutDoctor() {
+  clearIdentity() {
+    state.identity = null;
     state.currentDoctor = null;
-  },
-
-  verifyPatient(name: string, birthday: string): Patient {
-    let patient = state.patients.find(
-      p => p.name === name && p.birthday === birthday
-    );
-
-    if (!patient) {
-      patient = {
-        id: `patient${Date.now()}`,
-        name,
-        birthday,
-        phone: '',
-        gender: '',
-      };
-      state.patients.push(patient);
-    }
-
-    state.currentPatient = patient;
-    return patient;
-  },
-
-  logoutPatient() {
     state.currentPatient = null;
+  },
+
+  applyIdentity(identity: SessionIdentity) {
+    state.identity = identity;
+    state.currentPatient = identity.role === 'PATIENT' ? identity.profile : null;
+    state.currentDoctor = identity.role === 'DOCTOR' ? identity.profile : null;
+    state.sessionError = '';
+  },
+
+  async restoreSession() {
+    try {
+      const identity = await authApi.me();
+      // 页面恢复时发现账号已被另一标签页更换，先清理旧页面而非沿用草稿。
+      if (state.identity && (state.identity.role !== identity.role || state.identity.profile.id !== identity.profile.id)) {
+        this.clearIdentity();
+        state.sessionError = '账号已切换，请重新登录';
+      } else { this.applyIdentity(identity); }
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) this.clearIdentity();
+      else state.sessionError = (error as Error).message;
+    } finally { state.sessionReady = true; }
+  },
+
+  async login(username: string, password: string, role: 'PATIENT' | 'DOCTOR') {
+    const identity = await authApi.login(username, password);
+    if (identity.role !== role) {
+      await authApi.logout();
+      this.clearIdentity();
+      throw new Error(role === 'PATIENT' ? '请使用患者账号登录' : '请使用医生账号登录');
+    }
+    this.applyIdentity(identity);
+    return identity;
+  },
+
+  async logout() {
+    await authApi.logout();
+    this.clearIdentity();
+  },
+
+  async runAsCurrent<T>(action: () => T | Promise<T>): Promise<T> {
+    const expected = state.identity;
+    if (!expected) throw new Error('请先登录');
+    try {
+      return await verifyBeforeAction(expected, authApi.me, () => {
+        if (state.identity !== expected) throw new Error('身份已变化，请重试');
+        return action();
+      });
+    } catch (error) {
+      // 网络故障保留身份以便重试；401 或身份变化不能继续使用旧草稿。
+      if (!(error instanceof ApiError) || error.status === 401) this.clearIdentity();
+      throw error;
+    }
   },
 
   getQuestionsByDoctor(doctorId: string): Question[] {

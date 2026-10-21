@@ -2,6 +2,18 @@
 import { RouterView } from 'vue-router';
 import AppHeader from './components/AppHeader.vue';
 import AppFooter from './components/AppFooter.vue';
+import { onMounted, onUnmounted } from 'vue';
+import { store } from './store';
+
+const restoreWhenVisible = () => {
+  if (document.visibilityState === 'visible') void store.restoreSession();
+};
+onMounted(() => {
+  void store.loadDoctors().catch(() => {}); // 页面显示 store 中的可重试错误，不使用 JSON 回退。
+  void store.restoreSession();
+  document.addEventListener('visibilitychange', restoreWhenVisible);
+});
+onUnmounted(() => document.removeEventListener('visibilitychange', restoreWhenVisible));
 </script>
 
 <template>

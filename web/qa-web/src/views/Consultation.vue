@@ -1,51 +1,18 @@
 <template>
   <div class="consultation">
     <div class="consultation-container">
-      <div v-if="!currentPatient" class="auth-section">
+      <div v-if="!store.state.sessionReady" class="auth-section"><a-spin tip="正在恢复会话" /></div>
+      <div v-else-if="!currentPatient" class="auth-section">
         <div class="auth-card">
-          <h1>患者身份验证</h1>
-          <p>请输入您的姓名和生日以验证身份</p>
-          <a-form
-            :model="authForm"
-            :rules="authRules"
-            @finish="verifyPatient"
-            layout="vertical"
-          >
-            <a-form-item label="姓名" name="name">
-              <a-input
-                v-model:value="authForm.name"
-                size="large"
-                placeholder="请输入您的姓名"
-              >
-                <template #prefix>
-                  <UserOutlined />
-                </template>
-              </a-input>
-            </a-form-item>
-
-            <a-form-item label="生日" name="birthday">
-              <a-date-picker
-                v-model:value="authForm.birthday"
-                size="large"
-                format="YYYY-MM-DD"
-                placeholder="请选择您的生日"
-                style="width: 100%"
-              />
-            </a-form-item>
-
-            <a-form-item>
-              <a-button type="primary" html-type="submit" size="large" block>
-                验证身份
-              </a-button>
-            </a-form-item>
+          <h1>患者账号登录</h1>
+          <p>使用用户名和密码进入问诊</p>
+          <a-alert v-if="store.state.sessionError" :message="store.state.sessionError" type="error" />
+          <a-form :model="authForm" :rules="authRules" @finish="loginPatient" layout="vertical">
+            <a-form-item label="用户名" name="username"><a-input v-model:value="authForm.username" placeholder="请输入患者用户名" autocomplete="username" :maxlength="64" /></a-form-item>
+            <a-form-item label="密码" name="password"><a-input-password v-model:value="authForm.password" placeholder="请输入密码" autocomplete="current-password" :maxlength="128" /></a-form-item>
+            <a-button type="primary" html-type="submit" block :loading="loggingIn">登录</a-button>
           </a-form>
-
-          <a-alert
-            message="提示"
-            description="输入任意姓名和生日即可使用。首次输入会自动创建账户,再次输入相同信息即可登录。"
-            type="info"
-            show-icon
-          />
+          <a-alert message="本机演示账号" description="patient001 / Patient123!；另一个患者为 patient002。问题记录为演示数据。" type="info" show-icon />
         </div>
       </div>
 
@@ -163,16 +130,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { message } from 'ant-design-vue';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import {
   UserOutlined,
   LogoutOutlined,
   PlusOutlined
 } from '@ant-design/icons-vue';
-import { store, Doctor } from '../store';
+import { store } from '../store';
+import type { Doctor } from '../store';
 
 const route = useRoute();
 
@@ -185,14 +153,11 @@ const myQuestions = computed(() =>
 
 const selectedDoctor = ref<Doctor | null>(null);
 
-const authForm = reactive({
-  name: '',
-  birthday: null as Dayjs | null,
-});
-
+const loggingIn = ref(false);
+const authForm = reactive({ username: '', password: '' });
 const authRules = {
-  name: [{ required: true, message: '请输入姓名' }],
-  birthday: [{ required: true, message: '请选择生日' }],
+  username: [{ required: true, message: '请输入用户名' }],
+  password: [{ required: true, message: '请输入密码' }],
 };
 
 const submitModalVisible = ref(false);
@@ -209,42 +174,36 @@ const availableDoctors = computed(() => {
     : store.getActiveDoctors();
 });
 
-onMounted(() => {
-  const doctorUsername = route.params.doctorUsername as string;
-  if (doctorUsername) {
-    const doctor = store.getDoctorByUsername(doctorUsername);
-    if (doctor && doctor.isActive) {
-      selectedDoctor.value = doctor;
-      questionForm.doctorId = doctor.id;
-    }
+// 直接打开医生链接时等待异步加载，再判断诊室是否可用。
+watch(() => [route.params.doctorUsername, store.state.doctorsLoading, store.state.doctors], () => {
+  selectedDoctor.value = null;
+  const username = route.params.doctorUsername as string | undefined;
+  if (!username || store.state.doctorsLoading || store.state.doctorsError) return;
+  const doctor = store.getDoctorByUsername(username);
+  if (doctor?.isActive) { selectedDoctor.value = doctor; questionForm.doctorId = doctor.id; }
+  else { questionForm.doctorId = ''; message.warning('该诊室不存在或尚未开放'); }
+}, { immediate: true });
+
+const loginPatient = async () => {
+  loggingIn.value = true;
+  try { await store.login(authForm.username, authForm.password, 'PATIENT'); message.success('登录成功'); }
+  catch (error) { message.error((error as Error).message); }
+  finally { loggingIn.value = false; authForm.password = ''; }
+};
+
+const logoutPatient = async () => {
+  try { await store.logout(); message.success('已退出登录'); }
+  catch (error) { message.error((error as Error).message); }
+};
+
+watch(currentPatient, (patient, previous) => {
+  if (!patient || (previous && previous.id !== patient.id)) {
+    submitModalVisible.value = false;
+    questionForm.question = '';
+    questionForm.doctorId = '';
+    authForm.password = '';
   }
 });
-
-const verifyPatient = () => {
-  const birthday = authForm.birthday?.format('YYYY-MM-DD');
-  if (!birthday) {
-    message.error('请选择生日');
-    return;
-  }
-
-  const existingPatientCount = store.state.patients.filter(
-    p => p.name === authForm.name && p.birthday === birthday
-  ).length;
-
-  store.verifyPatient(authForm.name, birthday);
-
-  if (existingPatientCount > 0) {
-    message.success('验证成功,欢迎回来!');
-  } else {
-    message.success('首次登录,已为您创建账户!');
-  }
-};
-
-const logoutPatient = () => {
-  store.logoutPatient();
-  selectedDoctor.value = null;
-  message.success('已切换用户');
-};
 
 const clearSelectedDoctor = () => {
   selectedDoctor.value = null;
@@ -266,36 +225,20 @@ const closeSubmitModal = () => {
   questionForm.question = '';
 };
 
-const submitQuestion = () => {
-  if (!questionForm.doctorId) {
-    message.error('请选择医生');
-    return;
-  }
-
-  if (!questionForm.question.trim()) {
-    message.error('请输入问题');
-    return;
-  }
-
+const submitQuestion = async () => {
+  if (!questionForm.doctorId || !questionForm.question.trim()) { message.error('请选择医生并填写问题'); return; }
+  if (submitting.value) return;
   submitting.value = true;
-
-  setTimeout(() => {
-    const doctor = store.state.doctors.find(d => d.id === questionForm.doctorId);
-    if (doctor && currentPatient.value) {
-      store.addQuestion({
-        patientId: currentPatient.value.id,
-        patientName: currentPatient.value.name,
-        doctorId: doctor.id,
-        doctorName: doctor.name,
-        question: questionForm.question,
-      });
-
-      message.success('问题提交成功');
-      closeSubmitModal();
-    }
-
-    submitting.value = false;
-  }, 500);
+  try {
+    await store.runAsCurrent(() => {
+      const doctor = store.state.doctors.find(d => d.id === questionForm.doctorId && d.isActive);
+      const patient = currentPatient.value;
+      if (!doctor || !patient) throw new Error('医生或患者身份不可用');
+      store.addQuestion({ patientId: patient.id, patientName: patient.name, doctorId: doctor.id, doctorName: doctor.name, question: questionForm.question.trim() });
+    });
+    message.success('问题提交成功'); closeSubmitModal();
+  } catch (error) { message.error((error as Error).message); }
+  finally { submitting.value = false; }
 };
 
 const formatTime = (time: string) => {

@@ -114,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { message } from 'ant-design-vue';
 import dayjs from 'dayjs';
@@ -126,7 +126,8 @@ import {
   EditOutlined,
   CheckOutlined
 } from '@ant-design/icons-vue';
-import { store, Question } from '../store';
+import { store } from '../store';
+import type { Question } from '../store';
 
 const route = useRoute();
 const router = useRouter();
@@ -152,22 +153,22 @@ const selectedQuestion = ref<Question | null>(null);
 const answerText = ref('');
 const submitting = ref(false);
 
-onMounted(() => {
-  if (!currentDoctor.value || currentDoctor.value.username !== username) {
-    message.error('请先登录');
-    router.push('/doctor/login');
+watch(() => [store.state.sessionReady, currentDoctor.value, route.params.username], () => {
+  if (!store.state.sessionReady) return;
+  if (!currentDoctor.value || currentDoctor.value.username !== route.params.username) {
+    answerModalVisible.value = false; selectedQuestion.value = null; answerText.value = '';
+    void router.replace('/doctor/login');
   }
-});
+}, { immediate: true });
 
 const copyRoomUrl = () => {
   navigator.clipboard.writeText(roomUrl.value);
   message.success('诊室链接已复制到剪贴板');
 };
 
-const logout = () => {
-  store.logoutDoctor();
-  message.success('已退出登录');
-  router.push('/');
+const logout = async () => {
+  try { await store.logout(); message.success('已退出登录'); await router.push('/'); }
+  catch (error) { message.error((error as Error).message); }
 };
 
 const refreshQuestions = () => {
@@ -190,27 +191,28 @@ const closeAnswerModal = () => {
   answerText.value = '';
 };
 
-const submitAnswer = () => {
-  if (!answerText.value.trim()) {
-    message.error('请输入回复内容');
-    return;
-  }
-
+const submitAnswer = async () => {
+  if (!answerText.value.trim() || !selectedQuestion.value || submitting.value) return;
   submitting.value = true;
-
-  setTimeout(() => {
-    if (selectedQuestion.value) {
-      store.answerQuestion(selectedQuestion.value.id, answerText.value);
-      message.success('回复成功');
-      closeAnswerModal();
-    }
-    submitting.value = false;
-  }, 500);
+  try {
+    await store.runAsCurrent(() => {
+      if (!selectedQuestion.value || selectedQuestion.value.doctorId !== currentDoctor.value?.id) throw new Error('问题不属于当前医生');
+      store.answerQuestion(selectedQuestion.value.id, answerText.value.trim());
+    });
+    message.success('回复成功'); closeAnswerModal();
+  } catch (error) { message.error((error as Error).message); }
+  finally { submitting.value = false; }
 };
 
-const markAsAnswered = (questionId: string) => {
-  store.markQuestionAsAnswered(questionId);
-  message.success('已标记为已解答');
+const markAsAnswered = async (questionId: string) => {
+  try {
+    await store.runAsCurrent(() => {
+      const question = store.state.questions.find(q => q.id === questionId);
+      if (question?.doctorId !== currentDoctor.value?.id) throw new Error('问题不属于当前医生');
+      store.markQuestionAsAnswered(questionId);
+    });
+    message.success('已标记为已解答');
+  } catch (error) { message.error((error as Error).message); }
 };
 </script>
 

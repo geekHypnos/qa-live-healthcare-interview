@@ -77,18 +77,14 @@ const rules = {
 const onFinish = async () => {
   loading.value = true;
 
-  setTimeout(() => {
-    const doctor = store.loginDoctor(formState.username, formState.password);
-
-    if (doctor) {
+  try {
+    const identity = await store.login(formState.username, formState.password, 'DOCTOR');
+    if (identity.role === 'DOCTOR') {
       message.success('登录成功');
-      router.push(`/doctor/room/${doctor.username}`);
-    } else {
-      message.error('用户名或密码错误');
+      await router.push(`/doctor/room/${identity.profile.username}`);
     }
-
-    loading.value = false;
-  }, 500);
+  } catch (error) { message.error((error as Error).message); }
+  finally { loading.value = false; formState.password = ''; }
 };
 </script>
 
