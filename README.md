@@ -58,7 +58,10 @@ set -a; . ./.env; set +a
 export DB_USER="$MYSQL_USER" DB_PASSWORD="$MYSQL_PASSWORD"
 export DB_URL="jdbc:mysql://127.0.0.1:${MYSQL_PORT}/$MYSQL_DATABASE?useUnicode=true&characterEncoding=UTF-8&connectionTimeZone=UTC"
 mvn -f server/qa-service-user/pom.xml package
-java -jar server/qa-service-user/target/qa-service-user-0.0.1-SNAPSHOT.jar
+mkdir -p artifacts/runtime
+# 先停止本项目旧服务；运行副本不要在进程存活时覆盖。
+cp server/qa-service-user/target/qa-service-user-0.0.1-SNAPSHOT.jar artifacts/runtime/service.jar
+java -jar artifacts/runtime/service.jar
 ```
 
 另开终端在项目根目录启动前端：
@@ -91,15 +94,17 @@ npm run dev --prefix web/qa-web
 mvn -f server/qa-service-user/pom.xml test
 npm test --prefix web/qa-web
 npm run build --prefix web/qa-web
+node --test scripts/tests/*.test.cjs
 bash scripts/api-test.sh
 # 浏览器测试依赖首次安装浏览器；磁盘不足且已有兼容 Chromium 时可设置 BROWSER_EXECUTABLE。
 (cd web/qa-web && npx playwright install chromium)
 node scripts/browser-test.cjs
 node scripts/database-test.cjs
+node scripts/session-timeout-run.cjs
 node scripts/session-restart-test.cjs
 ```
 
-数据库验收只修改演示医生经验字段，结束时恢复，并重启本项目 MySQL 容器，不删除数据卷。自然超时测试需另启 `SERVER_PORT=18082 SESSION_TIMEOUT=1m` 的服务，再运行 `bash scripts/session-timeout-test.sh`；正常实例仍为 30 分钟空闲过期。
+数据库验收只修改演示医生经验字段，结束时恢复，并重启本项目 MySQL 容器，不删除数据卷。自然超时由最小包装在 18082 启动独立的 1 分钟配置实例，调用既有超时脚本后关闭；正常实例仍为 30 分钟空闲过期。
 
 已有数据库卷不会自动重新导入 seed。如需补充本项目演示数据：
 
@@ -118,4 +123,4 @@ docker compose exec -T mysql sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" mysql --default-
 
 问题列表、提问和回复仍为原项目的前端演示数据，新增内容刷新后不保证保留，不能作为真实医疗记录系统使用。此次持久化范围是医生资料及账号身份。会话在后端重启后失效，需要重新登录。
 
-本次仅修补原依赖范围内可兼容的更新；原 Vite 5 开发构建链仍有审计项，详见测试报告。开发服务只绑定本机，不作为公开生产服务交付。
+构建链已采用 Vite 6.4.4、Vue 插件 5.2.4，沿用 Vue/TypeScript、esbuild/Rollup 与 Java/MySQL。完整审计及冻结版本验收结果见测试报告；开发服务仍只绑定本机。

@@ -26,10 +26,16 @@ async function loadEvidence(dir, expected){
     const markers={backend:/BUILD SUCCESS/,frontend:/[ℹ#] (?:tests|pass) \d+/,scripts:/[ℹ#] (?:tests|pass) \d+/,build:/built in /,curl:/All \d+ curl requests passed\./,browser:/All browser checks passed\./,database:/PASS database restart preserves rows/,timeout:/PASS timeout session naturally expires/,restart:/PASS restart new service reconnects/,dependencies:/vite@6\./};
     if(entry.id==='audit')assert.equal(JSON.parse(text).metadata.vulnerabilities.total,0);
     else assert.match(text,markers[entry.id]);
-    if(['frontend','scripts'].includes(entry.id)){assert.ok(!/[ℹ#] (?:fail|cancelled|skipped) [1-9]/.test(text),'单元测试失败或跳过');}
+    if(['frontend','scripts'].includes(entry.id)){
+      assert.ok(!/[ℹ#] (?:fail|cancelled|skipped) [1-9]/.test(text),'单元测试失败或跳过');
+      const totals=[...text.matchAll(/[ℹ#] tests (\d+)/g)].map(m=>Number(m[1]));
+      const passes=[...text.matchAll(/[ℹ#] pass (\d+)/g)].map(m=>Number(m[1]));
+      assert.ok(totals.length>0 && totals.every(n=>n>0),'测试不能空跑');
+      assert.deepEqual(passes,totals,'测试通过数与总数不一致');
+    }
     if(entry.id==='restart')assert.match(text,/PASS restart old authenticated session/);
     if(entry.id==='database')for(const marker of ['repeated initialization','SQL change','demo modification restored'])assert.ok(text.includes(marker));
-    if(entry.id==='backend'){assert.ok(!/(?:Failures|Errors|Skipped): [1-9]/.test(text));}
+    if(entry.id==='backend'){assert.ok(!/(?:Failures|Errors|Skipped): [1-9]/.test(text));assert.match(text,/Tests run: [1-9]\d*, Failures: 0, Errors: 0, Skipped: 0/);}
     if(!files.some(f=>f.file===entry.file))files.push({file:entry.file,text});
   }
   return {manifest,files};

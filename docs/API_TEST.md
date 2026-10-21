@@ -54,3 +54,20 @@ rm "$JAR"
 ## 按本文执行并生成报告
 
 交给 AI 的执行任务应明确：依据本流程启动真实环境、运行脚本，保留脱敏命令与输出，再执行浏览器和数据库验收，把实际版本、时间、通过/失败、限制和证据写入 TEST_REPORT。测试失败先复现和修复后重跑，不删除断言、不跳过失败项，也不把环境失败或未执行记为通过。凭据、会话 Cookie 和 CSRF token 不进入公开报告。
+
+## 本轮完整采集与录制门槛
+
+保留上述逐项接口步骤。统一采集前先提交代码，使用 Java 17 构建并把 JAR 复制到 `artifacts/runtime/service.jar` 后启动，不运行会被下次构建覆盖的 target 文件。不要覆盖存活进程使用的运行副本。
+
+```bash
+export JAVA_HOME=$(/usr/libexec/java_home -v17)
+# 如本机已有 Maven 缓存，可选：export MAVEN_REPO_LOCAL=/path/to/cache
+node --test scripts/tests/*.test.cjs
+node scripts/session-timeout-run.cjs
+# 加载 README 中的数据库环境变量，启动本项目 MySQL/JAR/Vite 后：
+RUN_ID=your-unique-run node scripts/collect-evidence.cjs
+RUN_ID=your-unique-run EVIDENCE_DIR=artifacts/evidence/your-unique-run \
+  OUTPUT_DIR=artifacts/demo-your-unique-run node scripts/record-demo.cjs
+```
+
+采集器固定执行后端、前端、脚本单元、构建、五接口 curl、浏览器、数据库、自然超时、服务重启、完整 audit 和依赖树。Git 干净检查在采集前后及录制入口执行；run-manifest.json 记录提交 SHA、锁摘要、命令退出结果和脱敏日志摘要。任一失败或中途修改代码均不能生成成功验收；修复后用新提交和新 runId 完整重跑。脚本单元数量不混入前端数量，故障注入上下文不替代真实接口验收。
