@@ -118,6 +118,7 @@ docker compose exec -T mysql sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" mysql --default-
 
 - [PRD 模板](docs/PRD_TEMPLATE.md) 与 [登录 PRD](docs/PRD_LOGIN.md)
 - [设计说明](docs/DESIGN.md) 与 [实施计划](docs/IMPLEMENTATION_PLAN.md)
+- [正式测试用例与需求追踪](docs/TEST_CASES.md)（38 项，含前置条件、步骤、预期、实际结果和证据）
 - [API 测试步骤](docs/API_TEST.md) 与 [实际测试报告](docs/TEST_REPORT.md)
 - [提示词记录](docs/prompts.md) 与 [演示说明](docs/DEMO.md)
 
