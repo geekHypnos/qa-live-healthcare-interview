@@ -100,3 +100,11 @@
 执行方式：当前会话按 `docs/IMPLEMENTATION_PLAN.md` 逐项执行；本指令明确授权生成后开始，不另加计划确认轮次。
 
 已执行：生成实施计划；启动 Docker Desktop；验证 Java 17、Maven、前端工具；通过已登录 GitHub 页面创建 Fork；将 origin 指向 Fork、保留 upstream，并完成 dry-run 推送权限检查；独立测试浏览器录制短 WebM。环境过程及最初沙箱权限失败记入 TEST_REPORT。尚未执行功能验收。
+
+### 阶段任务指令 需求模板
+
+以下为 AI 执行时明确采用的任务指令，不是额外的用户原文：
+
+> 依据已通过审核的 DESIGN 和 IMPLEMENTATION_PLAN，先生成 docs/PRD_TEMPLATE.md，覆盖背景、范围、用户流程、具体需求、异常、验收、拆分及兼容限制。本步不生成登录功能代码。
+
+产物：PRD_TEMPLATE.md；先独立提交，随后按该模板生成登录 PRD。
