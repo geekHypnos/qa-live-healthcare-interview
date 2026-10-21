@@ -192,3 +192,5 @@
 > 整理 README 启动步骤、TEST_REPORT 实际结果及限制、DEMO 视频说明与索引，保留原始面试要求。将脱敏的接口、浏览器、数据库与生命周期结果放入 docs/evidence，视频不进入 Git。复查 diff、完整测试和必要文件，推送 Fork 特性分支，上传视频附件并创建指向 Fork main 的 PR；核实实际返回链接再交付。
 
 整理结果：最终再次执行 Maven 测试 9 项通过、前端测试 8 项通过、生产构建通过。演示视频已发布到 Fork 的 interview-demo-20261021 Release，页面显示 9.59 MB，与本地 SHA-256 一致。未将视频或 .env 纳入 Git。
+
+交付结果：创建 PR https://github.com/geekHypnos/qa-live-healthcare-interview/pull/1，核对 base=main、head=codex/healthcare-interview，仓库为 geekHypnos/qa-live-healthcare-interview，状态 open、merged=false。将真实链接补入 DEMO 和 TEST_REPORT。shasum 受本机 Perl locale 配置影响未运行成功，改用 Python hashlib 核对本地视频，SHA-256 与 GitHub 一致。这一步仅修改交付文档，不改已验收代码。

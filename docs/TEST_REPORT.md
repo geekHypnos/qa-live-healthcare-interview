@@ -1,6 +1,6 @@
 # 测试报告
 
-状态：本机功能验收通过，演示视频已录制并检查。视频已上传 [GitHub Release](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/tag/interview-demo-20261021)，附件名称、大小与 SHA-256 已核对；PR 信息在创建后补充。
+状态：本机功能验收通过，演示视频已录制并检查。视频已上传 [GitHub Release](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/tag/interview-demo-20261021)，附件名称、大小与 SHA-256 已核对；[PR #1](https://github.com/geekHypnos/qa-live-healthcare-interview/pull/1) 已创建，指向本人 Fork 的 main，未合并。
 
 ## 环境检查
 

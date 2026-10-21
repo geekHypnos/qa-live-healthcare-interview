@@ -38,3 +38,7 @@ EVIDENCE_DIR=/path/to/actual/test-logs node scripts/record-demo.cjs
 日志文件名为 curl-results.log、browser-results.log、database-results.log 和 timeout-results.log。脚本检查其中确有完整接口与浏览器成功结果；不能用示例通过记录替代实际测试。
 
 输出为 `artifacts/interview-demo.webm`。本机如使用已有兼容 Chromium，可通过 BROWSER_EXECUTABLE 指定路径。SQL 临时修改在 finally 中恢复。演示提问与回复仍是原项目前端模拟数据，刷新恢复的是服务端登录身份，不宣称新增问题被数据库持久化。
+
+## 代码交付
+
+[PR #1](https://github.com/geekHypnos/qa-live-healthcare-interview/pull/1)：本人的 Fork 内 `codex/healthcare-interview` → `main`，保持打开，未合并。
