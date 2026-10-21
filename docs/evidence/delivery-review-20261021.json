@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-10-21T07:20:12.738791+00:00",
+  "reviewedHead": "ffa238549682f8ca97e3d119c2ce5b83812da113",
+  "upstream": "https://github.com/ups216/qa-live-healthcare-interview",
+  "pr": {
+    "url": "https://github.com/geekHypnos/qa-live-healthcare-interview/pull/1",
+    "head": "ffa238549682f8ca97e3d119c2ce5b83812da113",
+    "base": "main",
+    "state": "open",
+    "merged": false
+  },
+  "video": {
+    "url": "https://github.com/geekHypnos/qa-live-healthcare-interview/releases/download/interview-demo-20261021-3b5681f/interview-demo-3b5681f.webm",
+    "release": "https://github.com/geekHypnos/qa-live-healthcare-interview/releases/tag/interview-demo-20261021-3b5681f",
+    "tagCommit": "3b5681f042fda8f31ae52c246278fc3608b811c9",
+    "sha256": "7631c5aed81de199033c263924ca9020fbe623c287d8f31292d359f6974797d4",
+    "bytes": 9537720,
+    "anonymousHeadStatus": 200
+  },
+  "checks": {
+    "bothRunManifestLogsMatch": true,
+    "onlyDocsAndReadmeChangedSinceVideoCode": true
+  },
+  "scope": "delivery consistency review; no business test rerun or new video decode"
+}

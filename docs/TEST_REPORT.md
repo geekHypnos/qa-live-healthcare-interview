@@ -1,5 +1,27 @@
 # 测试报告
 
+## 最终交付一致性审核（2026-10-21）
+
+结论：原题三项功能及要求的交付文件均有实现/用例/证据对应，未发现阻断交付的版本错配或失效视频链接；不是“所有流程已无条件完成”或“代码无任何缺陷”的保证。面试方收件、一天期限、历史 AI 过程的绝对完整性仍保留确认边界。
+
+| 原题要求 | 实现及交付 | 验收对应 |
+| --- | --- | --- |
+| 首页双语、右上角下拉、指定资源目录 | AppHeader/Home 及 web/qa-web/src/locales | I18N-01～06；视频 00:02/00:16/00:25 |
+| MySQL、Compose、phpMyAdmin | docker-compose.yml、database/init.sql | DB-01/04～06；视频 00:37～00:43 |
+| 用户服务医生 API 与页面联调 | DoctorController/DoctorRepository、前端 store.loadDoctors | DB-02～04/07～08；curl 与真实 SQL→API→页面 |
+| 用户名密码登录、模板/PRD指导开发 | AccountService/AuthController、登录表单、PRD_TEMPLATE/PRD_LOGIN | AUTH-01～10、DEL-01/03；视频 00:56 |
+| 所涉接口 curl、API_TEST、报告 | 5 个业务接口、API_TEST.md、本文 | 48 次请求，不是 48 个不同业务用例 |
+| 完成代码与完整功能演示 | 同一业务代码与版本化 Release | 原完整验收及视频；后续安装另有独立记录 |
+| docs 文档与全部 AI 提示词要求 | PRD 模板/PRD/设计/API_TEST/TEST_REPORT/prompts 齐备 | DEL-01/03；现有记录可追踪，不独立证明历史绝无遗漏 |
+| Fork 特性分支、PR→main、发送及一天期限 | 本人 Fork、codex/healthcare-interview、PR #1 | DEL-04 线上核对通过；DEL-05 待用户确认 |
+
+版本关系不要求三个 SHA 字面相同：业务测试与视频为 `3b5681f`，安装补充为 `c4c5e54`，本次审核前 PR HEAD 为 `ffa2385`。已用 Git 差异确认后两者相对视频代码仅改 README/docs，应用、测试脚本和锁文件未变。本次提交也仅增补文档/审核记录，未执行新的业务验收或重录视频。
+
+[线上核对快照](evidence/delivery-review-20261021.json)记录审核时的 PR HEAD、Fork 来源、base=main、open/未合并、Release 标签实际提交、视频附件大小/摘要和匿名 HEAD=200。该快照固定于审核时点，不伪装成本次文档提交之后的 PR HEAD。两个运行清单的日志摘要均重新核对通过。视频本地文件摘要与 GitHub asset digest 一致；本轮未重新解码/逐帧复看，画面结论引用原核验与 DEMO 索引。
+
+本轮修正：视频说明明确不含后续 npm ci 验收；PR 数字明确 curl 为请求数、浏览器包含故障注入、自然超时为独立 1 分钟配置。所称“五个接口全覆盖”仅指原题新增/涉及接口，不包括原有 `/api/test/cors` 演示端点或全部框架管理端点。保持原技术栈，不新增框架或重构。
+
+
 ## 安装后补充验收（2026-10-21）
 
 - 提交：`c4c5e5432f688dba946e6740e10f2d1a350d1afa`；运行：`20261021-install-c4c5e54`。与原业务验收提交相比仅有文档/证据变化，应用、脚本与锁文件未变。

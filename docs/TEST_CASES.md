@@ -534,7 +534,7 @@ node scripts/session-restart-test.cjs
 | GET /api/auth/me | AUTH-01、04～06、09～10 | 匿名 401、登录身份、失败切换/退出后 401；生命周期另测 |
 | POST /api/auth/logout | AUTH-06、08 | 缺失/错误 CSRF、患者/医生退出及旧身份失效 |
 
-详细 HTTP 请求、字段及 Cookie 断言以 [api-test.sh](../scripts/api-test.sh) 和 [API_TEST.md](API_TEST.md) 为准。所有上述接口已覆盖；客户端语言切换无需额外服务端接口。
+详细 HTTP 请求、字段及 Cookie 断言以 [api-test.sh](../scripts/api-test.sh) 和 [API_TEST.md](API_TEST.md) 为准。所有上述原题涉及接口已覆盖；不代表原有 `/api/test/cors` 或全部框架端点已测试。客户端语言切换无需额外服务端接口。
 
 ## 8. 覆盖边界与重测规则
 
@@ -575,3 +575,5 @@ node scripts/session-restart-test.cjs
 - scope.json 是运行结束后生成的辅助范围/环境/JAR 摘要记录，不是原清单 7 条命令的输出，原清单没有覆盖其摘要。本轮另记录清单和 scope 的 SHA-256；不回写原清单或把辅助记录冒充原始命令日志。JAR 当前摘要与记录一致，不据此前后采样声称持续监控过文件。
 
 本次仅审核证据与修正文档，没有重新安装、执行应用测试、重录视频或修改 JAR。原始日志、清单及 scope 均保持不变。安装后测试/构建通过结论仍成立。
+
+最终交付版本、视频和线上 PR 一致性核查见 [测试报告的最终审核](TEST_REPORT.md) 与 [线上快照](evidence/delivery-review-20261021.json)。此审核不新增业务通过计数。
