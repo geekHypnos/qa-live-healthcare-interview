@@ -95,6 +95,10 @@
       @ok="submitAnswer"
       @cancel="closeAnswerModal"
       :confirmLoading="submitting"
+      :cancelButtonProps="{ disabled: submitting }"
+      :closable="!submitting"
+      :maskClosable="!submitting"
+      :keyboard="!submitting"
     >
       <div v-if="selectedQuestion" class="modal-content">
         <div class="question-info">
@@ -102,7 +106,7 @@
           <p><strong>问题:</strong> {{ selectedQuestion.question }}</p>
         </div>
         <a-form-item label="您的回复">
-          <a-textarea
+          <a-textarea :disabled="submitting"
             v-model:value="answerText"
             :rows="6"
             placeholder="请输入您的专业建议和回复..."
@@ -186,6 +190,7 @@ const showAnswerModal = (question: Question) => {
 };
 
 const closeAnswerModal = () => {
+  if (submitting.value) return;
   answerModalVisible.value = false;
   selectedQuestion.value = null;
   answerText.value = '';
@@ -193,13 +198,15 @@ const closeAnswerModal = () => {
 
 const submitAnswer = async () => {
   if (!answerText.value.trim() || !selectedQuestion.value || submitting.value) return;
+  // 保存问题 ID 与文本，后续仅使用本次提交快照。
+  const payload = { id: selectedQuestion.value.id, doctorId: selectedQuestion.value.doctorId, answer: answerText.value.trim() };
   submitting.value = true;
   try {
     await store.runAsCurrent(() => {
-      if (!selectedQuestion.value || selectedQuestion.value.doctorId !== currentDoctor.value?.id) throw new Error('问题不属于当前医生');
-      store.answerQuestion(selectedQuestion.value.id, answerText.value.trim());
+      if (payload.doctorId !== currentDoctor.value?.id) throw new Error('问题不属于当前医生');
+      store.answerQuestion(payload.id, payload.answer);
     });
-    message.success('回复成功'); closeAnswerModal();
+    message.success('回复成功'); submitting.value = false; closeAnswerModal();
   } catch (error) { message.error((error as Error).message); }
   finally { submitting.value = false; }
 };

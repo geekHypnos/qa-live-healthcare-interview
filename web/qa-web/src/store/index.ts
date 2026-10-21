@@ -1,7 +1,7 @@
 import { reactive } from 'vue';
 import { request, ApiError } from '../api/client';
 import { authApi, type SessionIdentity } from '../api/auth';
-import { verifyBeforeAction } from '../api/session';
+import { verifyBeforeAction, IdentityError } from '../api/session';
 import questionData from '../data/question-list.json';
 
 export interface Doctor {
@@ -146,12 +146,12 @@ export const store = {
     if (!expected) throw new Error('请先登录');
     try {
       return await verifyBeforeAction(expected, authApi.me, () => {
-        if (version !== authVersion || identityKey(state.identity) !== identityKey(expected)) throw new Error('身份已变化，请重试');
+        if (version !== authVersion || identityKey(state.identity) !== identityKey(expected)) throw new IdentityError('身份已变化，请重试');
         return action();
       });
     } catch (error) {
       // 网络故障保留身份以便重试；401 或身份变化不能继续使用旧草稿。
-      if (version === authVersion && (!(error instanceof ApiError) || error.status === 401)) this.clearIdentity();
+      if (version === authVersion && (error instanceof IdentityError || (error instanceof ApiError && error.status === 401))) this.clearIdentity();
       throw error;
     }
   },

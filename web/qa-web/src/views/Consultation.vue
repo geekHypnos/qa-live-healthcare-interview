@@ -43,10 +43,15 @@
           />
         </div>
 
+        <a-spin v-if="store.state.doctorsLoading" tip="正在加载医生" />
+        <a-alert v-else-if="store.state.doctorsError" :message="store.state.doctorsError" type="error" show-icon>
+          <template #action><a-button @click="retryDoctors">重试</a-button></template>
+        </a-alert>
+        <a-empty v-else-if="!store.getActiveDoctors().length" description="暂无可用医生" />
         <div class="questions-section">
           <div class="section-header">
             <h2>我的问题</h2>
-            <a-button type="primary" @click="showSubmitModal">
+            <a-button type="primary" :disabled="doctorsUnavailable" @click="showSubmitModal">
               <PlusOutlined />
               提交问题
             </a-button>
@@ -89,6 +94,10 @@
       @ok="submitQuestion"
       @cancel="closeSubmitModal"
       :confirmLoading="submitting"
+      :cancelButtonProps="{ disabled: submitting }"
+      :closable="!submitting"
+      :maskClosable="!submitting"
+      :keyboard="!submitting"
       width="600px"
     >
       <a-form layout="vertical">
@@ -97,7 +106,7 @@
             v-model:value="questionForm.doctorId"
             size="large"
             placeholder="请选择您要咨询的医生"
-            :disabled="!!selectedDoctor"
+            :disabled="submitting || !!selectedDoctor || doctorsUnavailable"
           >
             <a-select-option
               v-for="doctor in availableDoctors"
@@ -118,7 +127,7 @@
         </a-form-item>
 
         <a-form-item label="您的问题" required>
-          <a-textarea
+          <a-textarea :disabled="submitting"
             v-model:value="questionForm.question"
             :rows="6"
             placeholder="请详细描述您的症状或问题..."
@@ -168,6 +177,9 @@ const questionForm = reactive({
   question: '',
 });
 
+const doctorsUnavailable = computed(() => store.state.doctorsLoading || !!store.state.doctorsError || !store.getActiveDoctors().length);
+// 错误由页面状态展示，重试不触碰患者草稿。
+const retryDoctors = () => store.loadDoctors().catch(() => {});
 const availableDoctors = computed(() => {
   return selectedDoctor.value
     ? [selectedDoctor.value]
@@ -218,6 +230,7 @@ const showSubmitModal = () => {
 };
 
 const closeSubmitModal = () => {
+  if (submitting.value) return;
   submitModalVisible.value = false;
   if (!selectedDoctor.value) {
     questionForm.doctorId = '';
@@ -227,16 +240,18 @@ const closeSubmitModal = () => {
 
 const submitQuestion = async () => {
   if (!questionForm.doctorId || !questionForm.question.trim()) { message.error('请选择医生并填写问题'); return; }
-  if (submitting.value) return;
+  if (submitting.value || doctorsUnavailable.value) return;
+  // 在等待会话检查前固定提交内容，避免异步期间读取可变表单。
+  const payload = { doctorId: questionForm.doctorId, question: questionForm.question.trim() };
   submitting.value = true;
   try {
     await store.runAsCurrent(() => {
-      const doctor = store.state.doctors.find(d => d.id === questionForm.doctorId && d.isActive);
+      const doctor = store.state.doctors.find(d => d.id === payload.doctorId && d.isActive);
       const patient = currentPatient.value;
       if (!doctor || !patient) throw new Error('医生或患者身份不可用');
-      store.addQuestion({ patientId: patient.id, patientName: patient.name, doctorId: doctor.id, doctorName: doctor.name, question: questionForm.question.trim() });
+      store.addQuestion({ patientId: patient.id, patientName: patient.name, doctorId: doctor.id, doctorName: doctor.name, question: payload.question });
     });
-    message.success('问题提交成功'); closeSubmitModal();
+    message.success('问题提交成功'); submitting.value = false; closeSubmitModal();
   } catch (error) { message.error((error as Error).message); }
   finally { submitting.value = false; }
 };

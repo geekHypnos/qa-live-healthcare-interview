@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {createRequire} from 'node:module';
-import {verifyBeforeAction} from '../src/api/session.ts';
+import {verifyBeforeAction,IdentityError} from '../src/api/session.ts';
 import {ApiError} from '../src/api/client.ts';
 const require=createRequire(import.meta.url), ts=require('typescript'), vue=require('vue');
 const patient=(id='patient001')=>({role:'PATIENT',accountId:'acc-'+id,profile:{id,name:id}});
@@ -17,7 +17,7 @@ function loadStore(){
     if(name==='vue')return vue;
     if(name==='../api/auth')return {authApi};
     if(name==='../api/client')return {ApiError};
-    if(name==='../api/session')return {verifyBeforeAction};
+    if(name==='../api/session')return {verifyBeforeAction,IdentityError};
     if(name.includes('question-list'))return [];
     throw new Error('Unexpected import: '+name);
   }});
@@ -52,4 +52,28 @@ test('failed logout during restore releases loading state without trusting old r
   pending[0].resolve(patient('patient002'));await restoring;
   assert.equal(store.state.sessionReady,true,'failed logout must not leave a permanent spinner');
   assert.equal(store.state.identity.profile.id,'patient001');
+});
+
+test('business failure preserves verified identity',async()=>{
+  const {store,pending}=loadStore();store.applyIdentity(patient());
+  const result=store.runAsCurrent(()=>{throw new Error('validation failed')});
+  pending[0].resolve(patient());await assert.rejects(result,/validation failed/);
+  assert.equal(store.state.identity?.profile.id,'patient001');
+});
+for(const status of [0,500,401])test(`action session failure ${status} has correct identity handling`,async()=>{
+  const {store,pending}=loadStore();store.applyIdentity(patient());let writes=0;
+  const result=store.runAsCurrent(()=>writes++);pending[0].reject(new ApiError(status,'failure'));
+  await assert.rejects(result);assert.equal(writes,0);
+  assert.equal(store.state.identity?.profile.id,status===401?undefined:'patient001');
+});
+test('changed server identity prevents action and clears old identity',async()=>{
+  const {store,pending}=loadStore();store.applyIdentity(patient());let writes=0;
+  const result=store.runAsCurrent(()=>writes++);pending[0].resolve(patient('patient002'));
+  await assert.rejects(result);assert.equal(writes,0);assert.equal(store.state.identity,null);
+});
+test('pending action cannot clear a newer login',async()=>{
+  const {store,pending}=loadStore();store.applyIdentity(patient());let writes=0;
+  const result=store.runAsCurrent(()=>writes++);await store.login('patient002','test','PATIENT');
+  pending[0].resolve(patient());await assert.rejects(result);
+  assert.equal(writes,0);assert.equal(store.state.identity.profile.id,'patient002');
 });
