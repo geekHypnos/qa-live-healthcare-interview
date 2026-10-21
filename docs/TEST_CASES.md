@@ -22,6 +22,7 @@
 | D3 | docs/prompts.md 记录全过程提示词 | DEL-03 |
 | P1 | 本人 Fork 特性分支，推送并创建指向 main 的 PR | DEL-04 |
 | P2 | 联系面试方，发送视频及 PR；一天内完成面试流程 | DEL-05 |
+| P3 | 代码、测试、文档全部通过 AI Coding 提示词完成，可手工调整 AI 产物 | DEL-03 |
 | X1 | 后续修复计划：竞态、异常恢复、有效写入断言、依赖归零、证据/录像可靠性 | REG-01～08、OPS-01 |
 
 R1～R3 为原题功能范围。REG/OPS 是为保证这些功能和交付可靠性增加的回归，不声称原题要求问答持久化、注册、密码找回、JWT 或 Redis。
@@ -36,7 +37,7 @@ R1～R3 为原题功能范围。REG/OPS 是为保证这些功能和交付可靠�
 
 ### 环境 E2（单元、脚本及故障注入）
 
-已有 npm 安装与 Java/Maven 环境。单元测试使用隔离对象；采集器测试使用临时目录、临时 Git 仓库和微型子进程，不执行实际数据库写操作。浏览器异常用例在独立 context 中拦截指定请求，正常业务用例仍访问真实后端；故障注入不能冒充真实后端故障。
+已有 npm 安装与 Java/Maven 环境。单元测试使用隔离对象；采集器测试使用临时目录、临时 Git 仓库和微型子进程，不执行实际数据库写操作。浏览器回归组在独立 context 中模拟 me 身份及医生响应，并注入延迟、网络错误或 500/401；旧浏览器流程另有真实后端正常业务验证；故障注入不能冒充真实后端故障。
 
 ```bash
 export JAVA_HOME=$(/usr/libexec/java_home -v17)  # macOS；其他系统配置对应 JAVA_HOME
@@ -93,7 +94,7 @@ node scripts/session-restart-test.cjs
 | 关联需求 | R1（补充体验） |
 | 验证方式 | 真实浏览器 |
 | 前置条件 | E1；已选择 English |
-| 操作步骤 | 1. 刷新首页<br>2. 检查标题与语言选择 |
+| 操作步骤 | 1. 刷新首页<br>2. 检查英文标题是否保留（现有脚本未单独断言刷新后的下拉选中值） |
 | 预期结果 | 仍为英文，无需重新选择 |
 | 实际结果 | 通过 |
 | 对应证据 | [浏览器日志](evidence/final-3b5681f/browser-results.log)：homepage complete translation and refresh memory |
@@ -191,7 +192,7 @@ node scripts/session-restart-test.cjs
 | 前置条件 | E1；数据库已有演示记录 |
 | 操作步骤 | 1. 重复执行 database/init.sql<br>2. 比较医生/患者/账号数量<br>3. 在修改验证结束后恢复 doc001 原值并读取 |
 | 预期结果 | 数量保持 5/5/10，不重复插入；临时修改被恢复 |
-| 实际结果 | 通过；录制后再次核对经验为“15年临床经验” |
+| 实际结果 | 通过；数据库测试读取并恢复修改前原值，随后断言相等；此日志不是录制结束后的独立 SQL 证据 |
 | 对应证据 | [数据库日志](evidence/final-3b5681f/database-results.log)：repeated initialization；demo modification restored；[报告](TEST_REPORT.md) |
 
 ### DB-06 保留数据卷重启
@@ -214,7 +215,7 @@ node scripts/session-restart-test.cjs
 | 验证方式 | 浏览器故障注入 |
 | 前置条件 | E1/E2；独立 context |
 | 操作步骤 | 1. 拦截医生请求返回 500<br>2. 分别检查医生页和问诊页错误状态<br>3. 移除故障后重试<br>4. 在问诊草稿存在时重载失败再恢复 |
-| 预期结果 | 错误可见、可以重试；问诊加载/失败不能提交；恢复同一医生且草稿不丢失 |
+| 预期结果 | 错误可见、可以重试；问诊加载中提交按钮禁用；恢复同一医生且草稿不丢失 |
 | 实际结果 | 通过 |
 | 对应证据 | [浏览器日志](evidence/final-3b5681f/browser-results.log)：doctor failure has real retry；consultation doctor loading/error/empty/retry；[回归脚本](../scripts/browser-regressions.cjs) |
 
@@ -237,8 +238,8 @@ node scripts/session-restart-test.cjs
 | 关联需求 | R3、T1 |
 | 验证方式 | 真实 curl + 浏览器 |
 | 前置条件 | E1；未登录 |
-| 操作步骤 | 1. 获取 CSRF token<br>2. 使用 patient001 和正确密码登录<br>3. GET /api/auth/me；打开患者问诊页 |
-| 预期结果 | 登录 200，role=PATIENT，身份为 patient001/赵明 |
+| 操作步骤 | 1. 获取 CSRF token<br>2. 使用首尾带空格的 patient001、正确密码及伪造 role=DOCTOR 登录<br>3. GET /api/auth/me；打开患者问诊页 |
+| 预期结果 | 登录 200，用户名空白规范化；仍为 PATIENT，不能靠请求 role 提权；资料 ID=patient001，响应 profile 无 password；页面显示赵明 |
 | 实际结果 | 通过 |
 | 对应证据 | [curl 日志](evidence/final-3b5681f/curl-results.log)：29 patient_login、30 patient_me；[浏览器日志](evidence/final-3b5681f/browser-results.log)：successful patient consultation |
 
@@ -250,7 +251,7 @@ node scripts/session-restart-test.cjs
 | 验证方式 | 真实 curl + 浏览器 |
 | 前置条件 | E1 |
 | 操作步骤 | 1. 分别输入错误密码和不存在账号<br>2. 获取有效 CSRF 后调用登录<br>3. 检查页面错误提示 |
-| 预期结果 | 401，不建立合法登录；错误信息不暴露账号是否存在 |
+| 预期结果 | 两种情况均 401、code=INVALID_CREDENTIALS；页面错误密码提示可见（未比较两种响应的完整正文或耗时） |
 | 实际结果 | 通过 |
 | 对应证据 | [curl 日志](evidence/final-3b5681f/curl-results.log)：09 wrong_password、11 unknown_account；[浏览器日志](evidence/final-3b5681f/browser-results.log)：password error |
 
@@ -297,8 +298,8 @@ node scripts/session-restart-test.cjs
 | 关联需求 | R3、T1 |
 | 验证方式 | 真实 curl + 浏览器 |
 | 前置条件 | E1 |
-| 操作步骤 | 1. 匿名访问 me<br>2. 患者和医生分别登录后退出<br>3. 再次访问 me；让旧标签页尝试提问、回复和标记已回答<br>4. 检查 SPA 受保护路由跳转和页面重新可见时的身份校验<br>5. 对照有效会话下标记已回答仅写入一次 |
-| 预期结果 | 匿名及退出后均 401；旧标签页不得提交/回复/标记；路由进入及重新可见时清理过期身份；有效身份标记仅写一次 |
+| 操作步骤 | 1. 匿名访问 me<br>2. 患者和医生分别登录后退出<br>3. 再次访问 me；让旧标签页尝试提问、回复和标记已回答<br>4. 检查 SPA 受保护路由跳转；手动 dispatch visibilitychange 事件检查身份校验处理器<br>5. 对照有效会话下标记已回答仅写入一次 |
+| 预期结果 | 匿名及退出后均 401；旧标签页不得提交/回复/标记；路由进入及可见性事件处理器清理过期身份（未测试操作系统窗口切换）；有效身份标记仅写一次 |
 | 实际结果 | 通过 |
 | 对应证据 | [curl 日志](evidence/final-3b5681f/curl-results.log)：02、41～42、47～48；[浏览器日志](evidence/final-3b5681f/browser-results.log)：stale patient/doctor、mark answered、SPA protected-route、visibility-restoration |
 
@@ -335,8 +336,8 @@ node scripts/session-restart-test.cjs
 | 前置条件 | E1；独立测试端口未占用，固定运行 JAR |
 | 操作步骤 | 1. 以 SESSION_TIMEOUT=1m 启动独立实例<br>2. 登录后无请求空闲 65 秒<br>3. 请求 me，结束后关闭自身实例 |
 | 预期结果 | me 返回 401，主演示 30 分钟配置不变 |
-| 实际结果 | 通过；不是对正式 30 分钟超时的实等验证 |
-| 对应证据 | [自然超时日志](evidence/final-3b5681f/timeout-results.log) |
+| 实际结果 | 通过；不是对正式 30 分钟超时的实等验证。包装器另有端口占用、启动/就绪/测试失败与正常退出的清理单元验证 |
+| 对应证据 | [自然超时日志](evidence/final-3b5681f/timeout-results.log)；[单元日志](evidence/final-3b5681f/unit-results.log)：timeout wrapper port/start/ready/test/none |
 
 ### AUTH-10 服务重启失效
 
@@ -418,7 +419,7 @@ node scripts/session-restart-test.cjs
 | --- | --- |
 | 关联需求 | X1 |
 | 验证方式 | 负向对照 |
-| 前置条件 | E2；独立浏览器上下文 |
+| 前置条件 | E1/E2；运行前端及医生 API，独立浏览器上下文模拟 me 身份 |
 | 操作步骤 | 1. 仅在浏览器内存将 answerQuestion 替换为空操作<br>2. 输入唯一文本并提交，即使出现成功提示仍检查目标写入<br>3. 另以单元数据模拟写到其他问题/错误文本 |
 | 预期结果 | 同一业务断言识别空写入、错误目标和错误文本；结束销毁上下文 |
 | 实际结果 | 通过：预期的断言失败被捕获，说明检测有效；不是错误地接受未写入 |
@@ -457,8 +458,8 @@ node scripts/session-restart-test.cjs
 | 前置条件 | E1/E2；固定 Vite/插件版本与锁文件 |
 | 操作步骤 | 1. 执行 npm ci，检查依赖树<br>2. 执行前后端测试、vue-tsc/build<br>3. 执行完整 npm audit --json |
 | 预期结果 | 可重装，无非法依赖；测试与构建成功；全量漏洞数为 0 |
-| 实际结果 | 通过；audit 从 3 个受影响包降为 0，保留构建大包警告 |
-| 对应证据 | [单元日志](evidence/final-3b5681f/unit-results.log)；[依赖树](evidence/final-3b5681f/dependencies.log)；[完整审计](evidence/final-3b5681f/audit-results.json) |
+| 实际结果 | 构建、测试、指定依赖树与当次完整 audit 通过，audit 从 3 个受影响包降为 0，保留大包警告。npm ci 仅有前期过程记录，不在最终 11 条命令内，缺少该步骤独立原始日志，不能称为同次采集通过 |
+| 对应证据 | [单元日志](evidence/final-3b5681f/unit-results.log)；[依赖树](evidence/final-3b5681f/dependencies.log)；[完整审计](evidence/final-3b5681f/audit-results.json)；[升级前审计](evidence/final-3b5681f/audit-before.json)；[安装过程记录](prompts.md)（非原始安装日志） |
 
 ## 6. 文档与交付核查（不计入自动测试数量）
 
@@ -469,7 +470,7 @@ node scripts/session-restart-test.cjs
 | 关联需求 | R3、T2、D2 |
 | 验证方式 | 文件及内容核查 |
 | 前置条件 | 代码分支可访问 |
-| 操作步骤 | 1. 检查 PRD 模板及登录 PRD<br>2. 检查设计、API_TEST 和 TEST_REPORT<br>3. 核对报告关联实际执行证据而非示例结果 |
+| 操作步骤 | 1. 检查 PRD 模板及登录 PRD<br>2. 对照模板八个章节及 PRD 开发拆分，检查设计、API_TEST 和 TEST_REPORT<br>3. 核对报告关联实际执行证据而非示例结果 |
 | 预期结果 | 规定文档齐全，PRD 按模板组织，测试步骤与真实结果可追溯 |
 | 实际结果 | 已核查通过 |
 | 对应证据 | [模板](PRD_TEMPLATE.md)、[PRD](PRD_LOGIN.md)、[设计](DESIGN.md)、[接口步骤](API_TEST.md)、[报告](TEST_REPORT.md) |
@@ -490,12 +491,12 @@ node scripts/session-restart-test.cjs
 
 | 字段 | 内容 |
 | --- | --- |
-| 关联需求 | D3、P1 |
+| 关联需求 | R3、T2、D3、P3 |
 | 验证方式 | 过程记录核查 |
 | 前置条件 | docs/prompts.md 和提交记录可访问 |
-| 操作步骤 | 1. 核对用户指令、阶段任务及结果<br>2. 区分旧轮次、失败运行和最终通过运行 |
-| 预期结果 | 保留 AI Coding 过程，不把尚未执行的工作写成完成 |
-| 实际结果 | 记录已核查；“历史提示词是否绝无遗漏”不能由自动化测试独立证明 |
+| 操作步骤 | 1. 核对代码、测试、文档的 AI Coding 指令与阶段结果<br>2. 核对按模板写 PRD、按 PRD 开发、按 API_TEST 测试并生成报告的过程记录<br>3. 区分旧轮次、失败运行和最终通过运行 |
+| 预期结果 | 全过程应通过 AI Coding 提示词完成，允许调整生成产物；保留对应记录，不把尚未执行的工作写成完成 |
+| 实际结果 | 现有记录可追踪上述阶段；记录齐备程度和“全部内容均经 AI、历史提示词绝无遗漏”不能仅由仓库及自动化测试独立证明，不标为已完全证实 |
 | 对应证据 | [提示词](prompts.md)；[提交历史](https://github.com/geekHypnos/qa-live-healthcare-interview/commits/codex/healthcare-interview/) |
 
 ### DEL-04 Fork 分支与现有 PR
@@ -524,11 +525,11 @@ node scripts/session-restart-test.cjs
 
 ## 7. 接口全覆盖追踪
 
-| 接口 | 对应用例 | 实际 curl 证据 |
+| 接口 | 对应用例 | curl 证据及其他验证边界 |
 | --- | --- | --- |
 | GET /api/doctors | DB-02、DB-04 | 01 doctors；数据库另验证修改后的响应 |
 | GET /api/auth/csrf | AUTH-01、AUTH-08 | 05 等多次 csrf；断言 token 与 headerName |
-| POST /api/auth/login | AUTH-01～03、05、07～08 | 错误/正确登录、参数边界、角色、切换、CSRF |
+| POST /api/auth/login | AUTH-01～03、05、07～08 | curl：错误/正确登录、参数边界、忽略伪造角色、切换、CSRF；AUTH-07 的错误入口拒绝是浏览器行为，不是通用 login API 拒绝角色 |
 | GET /api/auth/me | AUTH-01、04～06、09～10 | 匿名 401、登录身份、失败切换/退出后 401；生命周期另测 |
 | POST /api/auth/logout | AUTH-06、08 | 缺失/错误 CSRF、患者/医生退出及旧身份失效 |
 
@@ -536,8 +537,21 @@ node scripts/session-restart-test.cjs
 
 ## 8. 覆盖边界与重测规则
 
-原题功能需求均有对应实现核查和测试；交付文件与视频另有核查。这里的“需求覆盖”不等于全部代码行/分支 100% 覆盖，也不等于全浏览器兼容、负载或生产安全认证。
+原题功能、文档、分支和交付要求均已列入追踪；功能需求有对应实现核查和测试，交付文件与视频另有核查。但流程全部通过 AI 的独立证明、历史提示词绝对完整性及面试方收件/期限仍有确认边界，不应概括为“原仓库全部要求已验证通过”。这里的“需求覆盖”不等于全部代码行/分支 100% 覆盖，也不等于全浏览器兼容、负载或生产安全认证。
 
 问答维持原前端模拟数据，刷新持久化不是本题新增要求。自然超时使用独立 1 分钟配置；标准配置仍为 30 分钟。外部头像需要网络，构建大包提示保留。phpMyAdmin 通过真实录制检查，不计入单元测试数量。
 
 应用、依赖、配置或测试/录制脚本改变后，应重新冻结代码并完整采集；仅补充本用例文档和导航链接不使现有业务测试结果成为“新执行”。正式运行的清单及日志保持原样，不为配合文档修改时间、数量或摘要。
+
+## 9. 本轮文档复核（2026-10-21）
+
+对照上游 README、实际脚本断言与冻结日志，修正了以下表述；没有重跑应用测试或改动证据：
+
+- 增补 P3，明确 AI Coding 过程要求及其可证明范围；DEL-01 明确模板章节与开发拆分核对。
+- 区分 curl 的伪造角色校验和浏览器入口角色拒绝；补齐已有用户名规范化、公开资料无密码断言。
+- 将错误凭据结论收窄到已断言的状态码/错误码；可见性明确为合成 DOM 事件，刷新仅断言英文标题。
+- DB-05 不再把数据库测试恢复断言称为录像后的 SQL 核查；DB-07 仅声称已断言的加载中禁用，不扩大为失败态按钮断言。
+- OPS-01 明确 npm ci 无同次独立日志；最终审计归零是该次采集结果，不是对未来漏洞状态的保证。
+- 明确回归组使用模拟身份，不等同于真实登录；补列已有超时包装器清理单元覆盖。
+
+38 项场景的必填字段、相对链接及最终清单 11 条命令的日志 SHA-256 已复核。源码/测试脚本仍与验收提交一致；新增文档不改变原运行的时间、通过数和摘要。上述“过程证据不足”项保留为限制，不虚填通过，也不通过新增框架或无关用例扩大范围。

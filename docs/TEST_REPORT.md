@@ -10,6 +10,8 @@
 - [版本及命令清单](evidence/final-3b5681f/run-manifest.json) 记录实际命令、退出码、锁文件与日志摘要；全部命令成功，采集前后工作区干净。录制入口再次校验相同版本。
 - [新视频](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/download/interview-demo-20261021-3b5681f/interview-demo-3b5681f.webm) / [Release](https://github.com/geekHypnos/qa-live-healthcare-interview/releases/tag/interview-demo-20261021-3b5681f)；[现有 PR #1](https://github.com/geekHypnos/qa-live-healthcare-interview/pull/1)，仍指向本人 Fork main，不合并。
 
+文档复核补充：正式用例已区分真实 API、模拟身份和合成可见性事件；npm ci 只有前期过程记录，不在最终采集命令中。AI 过程完整性及面试方收件/期限不能由自动测试独立证明，详见 [用例复核结论](TEST_CASES.md#9-本轮文档复核2026-10-21)。本次未重跑测试。
+
 ### 环境与结果
 
 保持 Vue 3 / TypeScript / Ant Design Vue、Spring Boot 3.5.7 / Java 17、MySQL 8.4 / phpMyAdmin。Node 26.8.1；构建链 Vite 6.4.4、插件 5.2.4、esbuild 0.25.12。Maven 显式 JAVA_HOME=Java17；运行的是 artifacts/runtime/service.jar 副本，后续打包不覆盖存活进程文件。
@@ -34,7 +36,7 @@
 2. 业务验证异常不再误清登录；身份变化或明确 401 阻止旧操作，不清理新账号。
 3. 问诊页补齐医生加载中、失败重试、空列表；保留草稿，错误链接不静默选中其他医生。
 4. 回复断言绑定目标问题 ID、原文本、状态与列表数量，其他记录必须不变；空操作、错误目标和错误文本均有负向检测。
-5. SQL 读取/恢复、页面步骤与浏览器关闭失败均进入独立资源清理；失败不发布录像。
+5. SQL 读取/恢复、页面步骤与浏览器 context 关闭失败均进入独立资源清理；失败不发布录像。
 6. 采集器验证真实子进程失败、信号、目录覆盖；Git 检查覆盖暂存/未暂存/未跟踪代码；录制拒绝旧 SHA、锁摘要、runId、缺失或被改写日志，以及空跑/数量不一致的测试。
 
 ### 失败记录与真实限制
